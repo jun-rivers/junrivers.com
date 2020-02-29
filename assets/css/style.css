@@ -1,0 +1,378 @@
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond|Noto+Sans:400,700');
+@import url('https://fonts.googleapis.com/earlyaccess/notosanstc.css');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #fff;
+  font-size: 2.4vmin;
+  font-weight: 600;
+  /*letter-spacing: -0.1vw;*/
+  font-family: 'Noto Sans', sans-serif;
+  background: #fff;
+  color: #000;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+}
+
+nav {
+  display: block;
+  width: 100%;
+  font-size: 1.0em;
+  text-align: center;
+  margin-bottom: 2em;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadein .1s forwards ease-out;
+}
+
+nav a {
+  display: block;
+  width: 33.3%;
+  height: 3.0em;
+  float: left;
+  padding-top: 0.6em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-bottom 200ms ease-out;
+}
+
+nav a.active {
+  border-bottom: 2px solid black;
+}
+
+nav a:hover {
+  border-bottom: 2px solid black;
+}
+
+h1, h3, h4 {
+  font-family: 'EB Garamond', serif;
+  font-weight: 100;
+  letter-spacing: inherit;
+}
+
+h1 {
+  font-size: 8.5vw;
+  line-height: 9.0vw;
+  margin-bottom: 9.0vw;
+}
+
+h2 {
+  font: inherit;
+  font-weight: normal;
+  line-height: inherit;
+  letter-spacing: inherit;
+  /* outline: solid 1px red; */
+  width: calc(100% - 80px);
+  float: left;
+  text-align: center;
+}
+
+h3 {
+  font-size: 5.5vw;
+  line-height: 6.0vw;
+  margin-bottom: 6.0vw;
+}
+
+h4 {
+  margin-bottom: 5.5vw;
+}
+
+h5 {
+  font-size: 2.5vw;
+  margin: 4.5vw 0;
+}
+
+p {
+  margin-bottom: 5.5vw;
+}
+
+sub {
+  font-size: 2.5vw;
+  line-height: 2.5vw;
+}
+
+.text {
+  padding: 2.2vw 10vw 4vw 3vw;
+  font-size: 3.2vw;
+  line-height: 4.5vw;
+}
+
+.text p, .text sub, h1, h3, h4, h5, nav {
+  opacity: 0;
+  animation: fadein .5s forwards ease-out;
+}
+
+.text a, aside a {
+  text-decoration: underline;
+  text-decoration-skip: ink;
+  color: inherit;
+  padding-left: .5vw;
+  padding-right: .5vw;
+  margin-left: -.5vw;
+  margin-right: -.5vw;
+  cursor: pointer;
+}
+
+.text a:hover, aside a:hover {
+  text-decoration: none;
+}
+
+.noscroll {
+  overflow: hidden;
+}
+
+.link-external:after {
+  display: inline-block;
+  content: '\2197';
+  padding-left: .8vw;
+  font-weight: normal;
+}
+
+.cf {
+  margin-bottom: 8.0vh;
+}
+
+.jp h1, .jp h3, .zh h1, .zh h3 {
+  font-family: 'ヒラギノ明朝 ProN','Hiragino Mincho ProN','YuMincho','Yu Mincho','メイリオ',Meiryo,'ＭＳ Ｐゴシック',serif;
+  writing-mode: vertical-rl;
+  float: right;
+  margin-left: 8.0vw;
+  line-height: 10.0vw;
+  letter-spacing: 0.5vw;
+}
+
+.jp h1, .zh h1 {
+  font-size: 8.5vmin;
+  line-height: 9.0vmin;
+  font-weight: 400;
+}
+
+.jp h3, .zh h3 {
+  font-size: 5.5vmin;
+  line-height: 6.0vmin;
+  font-weight: 800;
+  margin-top: 18.0vh;
+  margin-right: 4.0vw;
+}
+
+.jp h4, .zh h4 {
+  font-family: 'ヒラギノ明朝 ProN','Hiragino Mincho ProN','YuMincho','Yu Mincho','メイリオ',Meiryo,'ＭＳ Ｐゴシック',serif;
+}
+
+aside {
+  position: fixed;
+  right: 1.5vw;
+  top: 50.0vh;
+  writing-mode: vertical-rl;
+  text-combine-upright: digits 2;
+  font-size: 0.6em;
+  font-weight: 100;
+  letter-spacing: 0.1em;
+  animation: fadein 0.5s forwards ease-out;
+}
+
+aside span {
+  opacity: 0;
+  animation: fadein 1s forwards ease-out;
+  animation-delay: 2s;
+}
+
+#art {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -99;
+  opacity: 0;
+  animation: fadein 3s forwards ease-out;
+}
+
+#artist-statement {
+  z-index: 99;
+  transition: left 0.5s ease-out, opacity 0.5s ease-out;
+  position: fixed;
+  left: 100%;
+  top: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  padding: 3.0vw;
+  padding-top: 3em;
+  opacity: 0;
+  overflow: scroll;
+}
+
+#artist-statement h1 {
+  float: left;
+}
+
+#artist-statement .cf {
+  margin-bottom: 4.0vh;
+}
+
+#artist-statement .text {
+  display: none;
+}
+
+#artist-statement .btn {
+  color: #fff;
+}
+
+#artist-statement .btn-back {
+  float: right;
+  z-index: 999;
+}
+
+body.show-artist-statement #artist-statement {
+  left: 0%;
+  opacity: 1.0;
+}
+
+body.show-artist-statement #artist-statement .text.active {
+  display: block;
+}
+
+body.loading {
+}
+
+.masterclose {
+  display: block;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(0,0,0,.5);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: all .1s ease-out;
+}
+
+.masterclose-visible {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+h2:before {
+  content: '●';
+  position: absolute;
+  margin-left: -25px;
+  animation: circle infinite .8s;
+  opacity: 0;
+  transition: opacity .4s;
+  /* transform-origin: 50% 50%; */
+}
+
+body.loading h2:before {
+  opacity: 1;
+}
+
+@keyframes circle {
+  0%, 100%  {transform: scale(1); margin-top: -2px}
+  50%       {transform: scale(1.7); margin-top: -3px}
+}
+
+.btn {
+  /* outline: solid 1px blue; */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  display: block;
+  appearance: none;
+  height: 10vh;
+  width: 40px;
+  font: inherit;
+  font-weight: normal;
+  font-size: 25px;
+  background: none;
+  border: none;
+  border-radius: 0px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-external {
+  float: left;
+}
+
+.cf {
+  display: block;
+  clear: both;
+}
+
+.quote-line {
+  letter-spacing: 0;
+}
+
+.text:not(.active) {
+  display: none;
+}
+
+aside span:not(.active) {
+  display: none;
+}
+
+.text a:focus {
+  text-decoration: none;
+  outline: solid 4px rgba(0,0,0,.4);
+}
+
+.btn:focus {
+  background: #fff;
+  color: #000;
+  outline: none;
+}
+
+
+footer {
+  width: 100%;
+  height: 3.0em;
+}
+footer {
+  width: 100%;
+  height: 6.0em;
+  text-align: center;
+}
+footer a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+  background: #212121;
+  line-height: 6.0em;
+}
+footer a:hover {
+  color: #212121;
+  background: white;
+}
+footer a:not(.active) {
+  display: none;
+}
+
+::selection {
+  background: #000;
+  background: rgba(0,0,0,.99);
+  color: #fff;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
