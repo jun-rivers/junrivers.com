@@ -90,6 +90,12 @@ h5 {
   margin: 4.5vw 0;
 }
 
+h6 {
+  font-size: 1.5vw;
+  margin: 8.0vw 0;
+}
+
+
 p {
   margin-bottom: 5.5vw;
 }
@@ -105,7 +111,7 @@ sub {
   line-height: 4.5vw;
 }
 
-.text p, .text sub, h1, h3, h4, h5, nav {
+.text p, .text sub, h1, h3, h4, h5, h6, nav, div {
   opacity: 0;
   animation: fadein .5s forwards ease-out;
 }
