@@ -256,7 +256,10 @@ aside span {
 }
 
 #artist-statement .btn-back {
-  float: right;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
   z-index: 999;
 }
 
