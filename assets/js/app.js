@@ -24,8 +24,12 @@ $(document).ready(function() {
   };
 
   window.onpopstate = function updateLanguage() {
-    var lang = url.searchParams.get("lang");
-    setLanguage(lang);
+    setTimeout(function() {
+      url = new URL(window.location.href);
+      var _lang = url.searchParams.get("lang");
+      console.log(_lang);
+      setLanguage(_lang)
+    }, 300);    
   };
 
   function setLanguage(lang) {
@@ -40,8 +44,6 @@ $(document).ready(function() {
 
     $('footer a.active').removeClass('active');
     $('footer a.'+lang).addClass('active');
-
-    window.history.pushState({lang: lang}, lang, '?lang='+lang);
   }
 
   // SWITCH LANGUAGE
@@ -49,8 +51,8 @@ $(document).ready(function() {
 
     var lang = $(this).attr('data-lang');
     console.log(lang);
-
     setLanguage(lang);
+    window.history.pushState({'lang': lang}, lang, '?lang='+lang);
     return false;
   });
 
