@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Super-Auto | Writing</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css?v=0.3.3" />
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+    <script src="sketch.js?v=0.3.0"></script>
+    <script>
+      window.addEventListener("load",function() {
+        setTimeout(function(){
+            // This hides the address bar:
+            window.scrollTo(0, 1);
+        }, 0);
+    });
+    </script>
+  </head>
+  <body>
+    <div id="intro">
+      <h1 class="jp">スーパーオート</h1>
+      <h1>Super-Auto</h1>
+      <div class="spacer"></div>
+      <h2 class="jp">使用説明</h2>
+      <h2>Instructions</h2>
+      <div id="instructions">
+        <ol>
+          <li><span class="jp">ページの上左の方にある漢字を書いて下さい</span><br/>Try to write the character as shown on the top-left corner.</li>
+          <li><span class="jp">出来るだけ、綺麗に書いて下さい</span><br/>Write as beautifully as possible.</li>
+          <li><span class="jp">字を完成したら、「次へ」を押し、次の字を書き始めてください</span><br/>Once completed, click 'next', and start writing the next character.</li>
+          <li><span class="jp">5分の中で出来るだけたくさんの字を書いて下さい</span><br/>Finish as many characters as possible within 5 minutes.</li>
+        </ol>
+      </div>
+      <button class="start" onclick="
+        // document.body.requestFullscreen();
+        document.getElementById('intro').remove();">Start Now</button>
+    </div>
+  </body>
+</html>
+
+<!-- TODO:
+
+Google fonts
+favicon
+upload png to server/db
+visualize all png
+
+
+ -->
