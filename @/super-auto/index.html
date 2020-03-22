@@ -6,20 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
 
-    <title>Super-Auto | Writing</title>
+    <title>Super-Auto | Introduction</title>
 
-    <link rel="stylesheet" type="text/css" href="style.css?v=0.3.3" />
-    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" type="text/css" href="assets/style.css?v=0.3.5" />
+    <!-- <link rel="manifest" href="manifest.json"> -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
-    <script src="sketch.js?v=0.3.0"></script>
-    <script>
-      window.addEventListener("load",function() {
-        setTimeout(function(){
-            // This hides the address bar:
-            window.scrollTo(0, 1);
-        }, 0);
-    });
-    </script>
   </head>
   <body>
     <div id="intro">
@@ -36,19 +27,16 @@
           <li><span class="jp">5分の中で出来るだけたくさんの字を書いて下さい</span><br/>Finish as many characters as possible within 5 minutes.</li>
         </ol>
       </div>
-      <button class="start" onclick="
-        // document.body.requestFullscreen();
-        document.getElementById('intro').remove();">Start Now</button>
+      <button class="start" onclick="location.href='./sutra-write';">Start Now</button>
     </div>
   </body>
 </html>
 
 <!-- TODO:
 
-Google fonts
 favicon
 upload png to server/db
 visualize all png
-
+add sound
 
  -->
