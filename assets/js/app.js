@@ -15,8 +15,6 @@ $(document).ready(function() {
     } else {
       setLanguage('en');
     }
-  } else {
-    setLanguage('en');
   }
 
   window.mobilecheck = function() {
