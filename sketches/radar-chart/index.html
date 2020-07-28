@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<title>The X Team Radar Chart</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+<link rel="stylesheet" href="src/radar-chart.css">
+<head>
+  <style>
+    body {
+      padding: 20px;
+      text-align: center;
+    }
+    .radar-chart .area {
+      fill-opacity: 0.3;
+    }
+    .radar-chart.focus .area {
+      fill-opacity: 0.3;
+    }
+    .radar-chart.focus .area.focused {
+      fill-opacity: 0.9;
+    }
+    .area.germany, .germany .circle {
+      fill: #FFD700;
+      stroke: none;
+    }
+    .area.argentina, .argentina .circle {
+      fill: #ADD8E6;
+      stroke: none;
+    }
+  </style>
+
+  <script type="text/javascript" src="https://d3js.org/d3.v3.js"></script>
+  <script type="text/javascript" src="src/radar-chart.js"></script>
+
+  <script type="text/javascript">
+    RadarChart.defaultConfig.color = function() {};
+    RadarChart.defaultConfig.radius = 3;
+  </script>
+
+  <script type="text/javascript">
+    var data = [
+      {
+        className: 'Wilfred', // optional can be used for styling
+        axes: [
+          {axis: "business", value: 9}, 
+          {axis: "aesthetics", value: 16}, 
+          {axis: "productivity", value: 12},  
+          {axis: "language", value: 15},  
+          {axis: "technology", value: 8}
+        ]
+      },
+      {
+        className: 'Michelle',
+        axes: [
+          {axis: "business", value: 18}, 
+          {axis: "aesthetics", value: 15}, 
+          {axis: "productivity", value: 18},  
+          {axis: "language", value: 13},  
+          {axis: "technology", value: 14}
+        ]
+      },
+      {
+        className: 'Christy',
+        axes: [
+          {axis: "business", value: 3}, 
+          {axis: "aesthetics", value: 17}, 
+          {axis: "productivity", value: 6},  
+          {axis: "language", value: 9},  
+          {axis: "technology", value: 8}
+        ]
+      },
+      {
+        className: 'Alice',
+        axes: [
+          {axis: "business", value: 3}, 
+          {axis: "aesthetics", value: 5}, 
+          {axis: "productivity", value: 15},  
+          {axis: "language", value: 17},  
+          {axis: "technology", value: 7}
+        ]
+      },
+      {
+        className: 'Jeff',
+        axes: [
+          {axis: "business", value: 15}, 
+          {axis: "aesthetics", value: 3}, 
+          {axis: "productivity", value: 13},  
+          {axis: "language", value: 10},  
+          {axis: "technology", value: 13}
+        ]
+      }
+    ];
+    // function randomDataset() {
+    //   return data.map(function(d) {
+    //     return {
+    //       className: d.className,
+    //       axes: d.axes.map(function(axis) {
+    //         return {axis: axis.axis, value: Math.ceil(Math.random() * 10)};
+    //       })
+    //     };
+    //   });
+    // }
+  </script>
+</head>
+<body>
+  <h1>The X Team</h1>
+  <h2>A Radar Chart Visualization</h2>
+
+  <script type="text/javascript">
+  var chart = RadarChart.chart();
+  var cfg = chart.config(); // retrieve default config
+  var svg = d3.select('body').append('svg')
+    .attr('width', cfg.w)
+    .attr('height', cfg.h + cfg.h / 4);
+  svg.append('g').classed('single', 1).datum(data).call(chart);
+
+  // many radars
+  // chart.config({w: cfg.w / 4, h: cfg.h / 4, axisText: false, levels: 0, circles: false});
+  // cfg = chart.config();
+  // function render() {
+  //   var game = svg.selectAll('g.game').data(
+  //     [
+  //       randomDataset(),
+  //       randomDataset(),
+  //       randomDataset(),
+  //       randomDataset()
+  //     ]
+  //   );
+  //   game.enter().append('g').classed('game', 1);
+  //   game
+  //     .attr('transform', function(d, i) { return 'translate('+(i * cfg.w)+','+ (cfg.h * 4) +')'; })
+  //     .call(chart);
+
+  //   setTimeout(render, 1000);
+  // }
+  // render();
+  </script>
+
+</body>
+</html>
