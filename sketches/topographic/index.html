@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Topographic</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.0.0/mapbox-gl.css" rel="stylesheet" />
+<style>
+  body { margin: 0; padding: 0; }
+  #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoianJpdmVycyIsImEiOiJjams5dGl0dXcyMzlmM3BtZXFscnN5YncwIn0.WcweEk33xntcYnMCzrjoSw';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/jrivers/ck6j0db7t0v2h1iryuwxhb31y',
+        zoom: 13,
+        center: [138.72667587781484, 35.3586826571991]
+    });
+
+    map.on('load', function () {
+        map.addSource('mapbox-terrain', {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-terrain-v2'
+        });
+        map.addLayer({
+            'id': 'terrain-data',
+            'type': 'line',
+            'source': 'mapbox-terrain',
+            'source-layer': 'contour',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#eaeaea',
+                'line-width': 1
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
