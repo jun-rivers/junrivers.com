@@ -1,0 +1,135 @@
+<script>
+  var regionId = 'VOY-hkg';
+  var locationId = 'VOY-lagoon-001';
+</script>
+<script src="https://s3-ap-northeast-1.amazonaws.com/assets.sleeep.io/js/exp-lobby-ui.js?lu=20200909"></script>
+
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.3.1/mapbox-gl.js'></script>
+
+<script>
+var startingCenter = [114.2, 22.3]
+
+mapboxgl.accessToken = 'pk.eyJ1IjoianJpdmVycyIsImEiOiJjams5dGl0dXcyMzlmM3BtZXFscnN5YncwIn0.WcweEk33xntcYnMCzrjoSw';
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/jrivers/ckc3z5s7w06y61imyvbc5icfz',
+		center: startingCenter,
+		zoom: 13,
+		pitch: 45,
+		bearing: -17.6,
+		container: 'map',
+		antialias: true,
+		interactive: true
+});
+routeData = {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': [
+                        [114.186846, 22.289988],
+                        [114.194576, 22.296182],
+                        [114.2, 22.296182],
+                        [114.2, 22.3],
+                        [114.22, 22.3]
+                    ]
+                }
+            }
+        }
+        var el = document.createElement('div');
+        el.className = 'markers';
+        el.style.backgroundImage = 'url(https://uploads-ssl.webflow.com/5f1c9cd87a2f0e8f3f0fb373/60b03308b36621586505f2ce_wht-icon-sailboat.png)';
+        el.style.width = '46px';
+        el.style.height = '46px';
+
+        var marker = new mapboxgl.Marker(el,{offset:[20,-11]})
+            .setLngLat(routeData.data.geometry.coordinates[4])
+            .addTo(map);
+ 
+// The 'building' layer in the mapbox-streets vector source contains building-height
+// data from OpenStreetMap.
+map.on('load', function() {
+map.addSource('route', routeData);
+            map.addLayer({
+                'id': 'route',
+                'type': 'line',
+                'source': 'route',
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': '#888',
+                    'line-width': 8
+                }
+            });
+            
+map.addSource('mapbox-dem', {
+'type': 'raster-dem',
+'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+'tileSize': 512,
+'maxzoom': 14
+});
+// add the DEM source as a terrain layer with exaggerated height
+map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+map.dragPan.disable();
+// Insert the layer beneath any symbol layer.
+var layers = map.getStyle().layers;
+ 
+var labelLayerId;
+for (var i = 0; i < layers.length; i++) {
+if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+labelLayerId = layers[i].id;
+break;
+}
+}
+
+
+// Get locations from EXP.pms
+var locations;
+$.getJSON("https://os.exp.is/api/locations/geojson", function(json) {
+  locations = json;
+});
+
+map.addLayer({
+'id': '3d-buildings',
+'source': 'composite',
+'source-layer': 'building',
+'filter': ['==', 'extrude', 'true'],
+'type': 'fill-extrusion',
+'minzoom': 15,
+'paint': {
+'fill-extrusion-color': '#aaa',
+ 
+// use an 'interpolate' expression to add a smooth transition effect to the
+// buildings as the user zooms in
+'fill-extrusion-height': [
+"interpolate", ["linear"], ["zoom"],
+15, 0,
+15.05, ["get", "height"]
+],
+'fill-extrusion-base': [
+"interpolate", ["linear"], ["zoom"],
+15, 0,
+15.05, ["get", "min_height"]
+],
+'fill-extrusion-opacity': .6
+}
+}, labelLayerId);
+});
+</script>
+
+<script>
+var element = document.getElementById('fb-share');
+element.classList.add('fb-share-button');
+(function (d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+			js = d.createElement(s); js.id = id;
+			js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.0";
+			fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+</script>

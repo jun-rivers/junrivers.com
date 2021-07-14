@@ -1,0 +1,251 @@
+<!-- IMPORTANT: RUN THIS FILE ONLY ONCE PER DATA SET! -->
+<!-- RAN ONCE: DON"T RUN AGAIN, now commenting out scripts -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>submit points</title>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-database.js"></script>
+    <!--necessary?-->
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+    <link href='https://uploads-ssl.webflow.com/5d88f370c5599e348fb22cbe/5d8b9e9b916e2bac8bac604b_mapbox_gl.txt' rel='stylesheet' />
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+    .mapboxgl-canvas {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+    .mapboxgl-canvas:focus {
+    outline:none;
+    }
+    #map {
+        width: 100%;
+        height: 50vh;
+    }
+    </style>
+
+</head>
+<body>
+    <h1>H1</h1>
+    <div id="map"></div>
+    <div id="xo-on-duty"></div>
+    <div id="notice"></div>
+    <div id="greeting"></div>
+    <div id="guest-name"></div>
+
+<script>
+    var regionId = 'FUUUN-jp';
+    var locationId = 'FUUUN-L-000';
+    var capsuleId = '60640ff6bac7917c3d32e452';
+    var capsuleMarker = 'https://assets.exp.is/icons/1x/blk-icon-fuuun.png';
+    var defaultPosition = [138.662356, 35.141136]; //starting center. kinoya
+    var mapStyle = 'mapbox://styles/jrivers/ckoqk805a4rt017tm41jx0nrr';
+    var has3D = false;
+    var drawSpeed = 200; // milliseconds per stroke, the smaller number the faster;
+</script>
+<script src="https://assets.exp.is/js/exp-lobby-ui.js?lu=20200909"></script>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoianJpdmVycyIsImEiOiJjams5dGl0dXcyMzlmM3BtZXFscnN5YncwIn0.WcweEk33xntcYnMCzrjoSw';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: mapStyle,
+    center: defaultPosition,
+    zoom: 4,
+    minZoom: 4,
+    pitch: 0,
+    bearing: 0,
+    container: 'map',
+    antialias: true,
+    interactive: true
+});
+
+map.on('load', function() {
+    // Get last action from firebase as the moment of check-in hence the start of the trip
+    var routePoints = [];
+    var routeData = {};
+    var recordAt = moment().format('YYYY-MM-DD 00:00');
+    // console.log(moment().format('YYYY-MM-DD HH:mm'));
+    locationRef.once('value',function(snapshot){
+        lastAction = snapshot.child("welcome-guest").child("last-action").val();
+        console.log(lastAction);
+
+        d3.json( //when doing demo, we use this.
+                // 'https://assets.exp.is/js/VOY-example-path.geojson',
+                'kinoya_to_hitsuki.geojson',
+                function (err, data) {
+                if (err) throw err;
+                // console.log(data);
+
+                // save full coordinate list for later
+                var routePoints = data.features[0].geometry.coordinates;
+
+                // start by showing just the first coordinate
+                data.features[0].geometry.coordinates = [routePoints[0]];
+
+                routeData = data;
+
+        // $.post("https://trekking.exp.is/api/mobiletrackings/map2", // Get Route Points from EXP.pms
+        //     { 
+        //         capsule: capsuleId,
+        //         start: lastAction, //moment of check-in
+        //         end: moment().format('YYYY-MM-DD HH:mm'), //current time
+        //     },
+        //     function( data ) {
+        //         console.log( data );
+        //         if (data.mobiletrackings.length > 0) {
+        //             for (var i=0; i < data.mobiletrackings.length; i++) {
+        //                routePoints.push(data.mobiletrackings[i].location.coordinates);
+        //             }
+        //         } else {
+        //             routePoints.push(defaultPosition);
+        //         }
+        
+        //         routeData = {
+        //             "type": "FeatureCollection",
+        //             "features": [
+        //                 {
+        //                     "type": "Feature",
+        //                     "geometry": {
+        //                         "type": "LineString",
+        //                         "coordinates": [routePoints[0]]
+        //                     }
+        //                 }
+        //             ]
+        //         }
+
+                map.addSource('route', { type: 'geojson', data: routeData });
+                // map.addSource('route', routeData);
+                map.addLayer({
+                    'id': 'route',
+                    'type': 'line',
+                    'source': 'route',
+                    'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                      'line-color': 'gray',
+                      'line-width': 3,
+                      'line-dasharray': [2, 4],
+                    },
+                });  
+                var el = document.createElement('div');
+                el.className = 'markers';
+                el.style.backgroundImage = 'url('+capsuleMarker+')';
+                el.style.width = '46px';
+                el.style.height = '46px';
+
+                var marker = new mapboxgl.Marker(el,{offset:[0,-10]})
+                    .setLngLat(routePoints[0])
+                    .addTo(map);
+                map.flyTo({
+                    center: routePoints[0],
+                    pitch: 60,
+                    zoom: 18,
+                });
+
+                // on a regular basis, add more coordinates from the saved list and update the map
+                var i = 3;
+                setTimeout(function() {
+                    var timer = window.setInterval(function () {
+                        if (i < routePoints.length) {
+                            routeData.features[0].geometry.coordinates.push(routePoints[i]);
+                            // console.log(routeData);
+                            map.getSource('route').setData(routeData);
+                            map.panTo(routePoints[i]);
+                            marker.setLngLat(routePoints[i]);
+                            console.log('lng: '+routePoints[i][0])
+                            console.log('lat: '+routePoints[i][1])
+                            recordAt = moment().subtract(1, 'd').add(i, 'm').format('YYYY-MM-DD hh:mm');
+                            console.log(recordAt);
+                            i++;
+                            // upload data to EXP.pms
+                            // $.post("https://trekking.exp.is/api/mobiletrackings2", 
+                            // {
+                            //     name: locationId,
+                            //     lng: routePoints[i][0], //moment of check-in
+                            //     lat: routePoints[i][1], //moment of check-in
+                            //     recordAt: recordAt, //current time
+                            // },
+                            // function( data ) {
+                            //     console.log( data );
+                            // });
+                        } else {
+                            window.clearInterval(timer);
+                        }
+                    }, drawSpeed);
+                }, 5000);
+            }, "json"); 
+        });
+
+        // map.dragPan.disable();
+               
+        map.addSource('mapbox-dem', {
+            'type': 'raster-dem',
+            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            'tileSize': 512,
+            'maxzoom': 14
+        });
+        // add the DEM source as a terrain layer with exaggerated height
+        map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.1 });
+        map.addLayer({
+            'id': 'sky',
+            'type': 'sky',
+            'paint': {
+                'sky-type': 'atmosphere',
+                'sky-atmosphere-sun': [0.0, 0.0],
+                'sky-atmosphere-sun-intensity': 15
+            }
+        });
+        if (has3D) {
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 15,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+                    // use an 'interpolate' expression to add a smooth transition effect to the
+                    // buildings as the user zooms in
+                    'fill-extrusion-height': [
+                        "interpolate", ["linear"], ["zoom"],
+                        15, 0,
+                        15.05, ["get", "height"]
+                    ],
+                    'fill-extrusion-base': [
+                        "interpolate", ["linear"], ["zoom"],
+                        15, 0,
+                        15.05, ["get", "min_height"]
+                        ],
+                    'fill-extrusion-opacity': .6
+                    }
+            }, labelLayerId);
+        }
+
+        // Insert the layer beneath any symbol layer.
+        var layers = map.getStyle().layers;
+
+        var labelLayerId;
+        for (var i = 0; i < layers.length; i++) {
+            if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+            labelLayerId = layers[i].id;
+            break;
+        }
+    }
+});
+</script>
+</body>
+</html>

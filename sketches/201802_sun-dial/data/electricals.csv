@@ -1,0 +1,10 @@
+id,parentId,name,size
+ROOT,NULL,Root,
+RE,ROOT,General > Revenue Expenditure,
+RA,ROOT,Test,1000000,
+RE11,RE,Main supervision recovery etc.,
+RE11A109K,RE11,Shivjayanti celebrations and lighting,170000
+RE11H108,RE11,Electicity for import tax naka,2550000
+RE11J,RE11,Maintaince for main building,
+RE11J101A,RE11J,Electricity expenditure,11475000
+RE11J101 C,RE11J,Power lift,2125000

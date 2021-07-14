@@ -1,0 +1,33 @@
+{
+ "name": "Time",
+ "children": [
+	{
+	 "name": "J",
+	 "children": [
+		{"name": "cluster", "size": 100},
+		{
+		 "name": "graph",
+		 "children": [
+			{"name": "BetweennessCentrality", "size": 35},
+			{"name": "LinkDistance", "size": 57}
+		 ]
+		}
+	 ]
+	},
+	{
+	 "name": "JIA",
+	 "children": [
+		{"name": "Easing", "size": 90},
+		{"name": "FunctionSequence", "size": 58},
+		{
+		 "name": "interpolate",
+		 "children": [
+			{"name": "ArrayInterpolator", "size": 19},
+			{"name": "ColorInterpolator", "size": 20}
+		 ]
+		},
+		{"name": "ISchedulable", "size": 10}
+	 ]
+	}
+ ]
+}

@@ -1,0 +1,24 @@
+id,parentId,name,size,percentage,avgHoursPerDay,ttlHoursPerWeek,notes
+TIME,NULL,Time,,100,,168,All I have
+J,TIME,J,,40,9.6,67.2,修身
+JIA,TIME,JIA,,20,4.8,33.6,齊家
+ESRI,TIME,Esri,,20,4.8,33.6,治國
+SPACE,TIME,Space is Ltd.,,20,4.8,33.6,平天下
+EXERCISE,J,Exercise,3.36,5,0.5,3.36,
+READ,J,Read,3.36,5,0.5,3.36,
+SLEEP,J,Sleep,53.76,80,7.7,53.76,
+GROOMING,J,Grooming,6.72,10,1.0,6.72,
+DINNER,JIA,Dinner & Chat,6.72,20,1.9,13.44,
+PLAY,JIA,Play,20.16,60,5.8,40.32,
+READ,JIA,Read,6.72,20,1.9,13.44,
+GEOP,ESRI,GeoPlanner Dev,3.36,10,0.5,3.36,
+URBAN,ESRI,Urban Dev,8.4,25,1.2,8.4,
+R+D,ESRI,R+D,6.72,20,1.0,6.72,
+EVAN,ESRI,Geodesign Evangelism,5.04,15,0.7,5.04,
+PROFDEV,ESRI,Professional Development,1.68,5,0.2,1.68,
+HKPROJ,ESRI,Hong Kong Projects,8.4,25,1.2,8.4,
+R&D,SPACE,R&D,10.08,30,1.4,10.08,
+IT,SPACE,IT,10.08,30,1.4,10.08,
+MKTG,SPACE,Marketing,6.72,20,1.0,6.72,
+SLS,SPACE,Sales,3.36,10,0.5,3.36,
+ADMIN,SPACE,Administration,3.36,10,0.5,3.36,

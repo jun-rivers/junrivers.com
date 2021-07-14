@@ -1,0 +1,245 @@
+{
+ "name": "EXP.",
+ "children": [
+  {
+   "name": "RM",
+   "children": [
+    {
+     "name": "Finance",
+     "children": [
+      {"name": "AgglomerativeCluster", "value": 3938},
+      {"name": "CommunityStructure", "value": 3812},
+      {"name": "HierarchicalCluster", "value": 6714},
+      {"name": "MergeEdge", "value": 743}
+     ]
+    },
+    {
+     "name": "HR",
+     "children": [
+      {"name": "BetweennessCentrality", "value": 3534},
+      {"name": "LinkDistance", "value": 5731},
+      {"name": "MaxFlowMinCut", "value": 7840},
+      {"name": "ShortestPaths", "value": 5914},
+      {"name": "SpanningTree", "value": 3416}
+     ]
+    },
+    {
+     "name": "Legal",
+     "children": [
+      {"name": "AspectRatioBanker", "value": 7074}
+     ]
+    }
+   ]
+  },
+  {
+   "name": "BD",
+   "children": [
+    {"name": "JP", "value": 5842},
+    {
+     "name": "HKG",
+     "children": [
+      {"name": "Art", "value": 1983},
+      {"name": "Wellness", "value": 2047},
+      {"name": "XM", "value": 1375}
+     ]
+    },
+    {"name": "TH", "value": 1041},
+    {"name": "TW", "value": 5176},
+    {"name": "US", "value": 5176},
+    {"name": "EU", "value": 6006}
+   ]
+  },
+  {
+   "name": "R&D",
+   "children": [
+    {
+      "name": "EXP.OS", 
+      "children": [
+        {"name": "EXP.bkg", "value": 586},
+        {"name": "EXP.acu", "value": 586},
+        {"name": "EXP.pms", 
+        "children": [
+            {"name": "FT (SLP)", "value": 721},
+            {"name": "NFT (Portfolio)", "value": 4294}
+        ]
+        },
+        {"name": "EXP.crm", "value": 586}
+      ]
+    },
+    {"name": "M/W-S", "value": 586},
+    {"name": "ABC", "value": 3331}
+   ]
+  },
+  {
+   "name": "OPS",
+   "children": [
+    {"name": "EXP.Life", "value": 8833},
+    {"name": "EXP.Goods", "value": 1732},
+    {"name": "EXP.Pro", "value": 3623},
+    {"name": "EXP.OS", "value": 10066}
+   ]
+  },
+  {
+   "name": "SLS",
+   "children": [
+    {"name": "XX", "value": 8746},
+    {"name": "PS (by EXP.)", "value": 8746}
+   ]
+  },
+  {
+   "name": "Sleeep Tech.",
+   "children": [
+    {"name": "SLPer", "value": 1082},
+    {"name": "ROOOM", "value": 1336},
+    {"name": "chAIR", "value": 319},
+    {"name": "FUUUN", "value": 10498},
+    {"name": "R.E.M.", "value": 2822}
+   ]
+  },
+  {
+   "name": "Space is Ltd.",
+   "children": [
+    {
+     "name": "HKG (Dreeem Lab)",
+     "children": [
+      {
+       "name": "axis",
+       "children": [
+        {"name": "Axes", "value": 1302},
+        {"name": "Axis", "value": 24593},
+        {"name": "AxisGridLine", "value": 652},
+        {"name": "AxisLabel", "value": 636},
+        {"name": "CartesianAxes", "value": 6703}
+       ]
+      },
+      {
+       "name": "ROOOM",
+       "children": [
+        {"name": "IScaleMap", "value": 2105},
+        {"name": "LinearScale", "value": 1316},
+        {"name": "LogScale", "value": 3151},
+        {"name": "OrdinalScale", "value": 3770},
+        {"name": "QuantileScale", "value": 2435},
+        {"name": "QuantitativeScale", "value": 4839},
+        {"name": "RootScale", "value": 1756},
+        {"name": "Scale", "value": 4268},
+        {"name": "ScaleType", "value": 1821},
+        {"name": "TimeScale", "value": 5833}
+       ]
+      },
+      {
+       "name": "SLEEEP.hkg",
+       "children": [
+        {"name": "Data", "value": 20544},
+        {"name": "DataList", "value": 19788},
+        {"name": "DataSprite", "value": 10349},
+        {"name": "EdgeSprite", "value": 3301},
+        {"name": "NodeSprite", "value": 19382},
+        {
+         "name": "render",
+         "children": [
+          {"name": "ArrowType", "value": 698},
+          {"name": "EdgeRenderer", "value": 5569},
+          {"name": "IRenderer", "value": 353},
+          {"name": "ShapeRenderer", "value": 2247}
+         ]
+        },
+        {"name": "ScaleBinding", "value": 11275},
+        {"name": "Tree", "value": 7147},
+        {"name": "TreeBuilder", "value": 9930}
+       ]
+      },
+      {
+       "name": "events",
+       "children": [
+        {"name": "DataEvent", "value": 2313},
+        {"name": "SelectionEvent", "value": 1880},
+        {"name": "TooltipEvent", "value": 1701},
+        {"name": "VisualizationEvent", "value": 1117}
+       ]
+      },
+      {
+       "name": "legend",
+       "children": [
+        {"name": "Legend", "value": 20859},
+        {"name": "LegendItem", "value": 4614},
+        {"name": "LegendRange", "value": 10530}
+       ]
+      },
+      {"name": "Visualization", "value": 16540}
+     ]
+    },
+    {
+     "name": "JP (UnNn Ltd.)",
+     "children": [
+      {
+       "name": "FUUUN",
+       "children": [
+        {"name": "Arrays", "value": 8258},
+        {"name": "Colors", "value": 10001},
+        {"name": "Dates", "value": 8217},
+        {"name": "Displays", "value": 12555},
+        {"name": "Filter", "value": 2324},
+        {"name": "Geometry", "value": 10993},
+        {
+         "name": "FUUUN Cha(t)",
+         "children": [
+          {"name": "FibonacciHeap", "value": 9354},
+          {"name": "HeapNode", "value": 1233}
+         ]
+        },
+        {"name": "IEvaluable", "value": 335},
+        {"name": "IPredicate", "value": 383},
+        {"name": "IValueProxy", "value": 874},
+        {
+         "name": "Artist in Mobility",
+         "children": [
+          {"name": "Erikyan", "value": 3165},
+          {"name": "IMatrix", "value": 2815},
+          {"name": "SparseMatrix", "value": 3366}
+         ]
+        },
+        {"name": "Maths", "value": 17705},
+        {"name": "Orientation", "value": 1486},
+        {
+         "name": "palette",
+         "children": [
+          {"name": "ColorPalette", "value": 6367},
+          {"name": "Palette", "value": 1229},
+          {"name": "ShapePalette", "value": 2059},
+          {"name": "SizePalette", "value": 2291}
+         ]
+        },
+        {"name": "Property", "value": 5559},
+        {"name": "Shapes", "value": 19118},
+        {"name": "Sort", "value": 6887},
+        {"name": "Stats", "value": 6557},
+        {"name": "Strings", "value": 22026}
+       ]
+      },
+      {"name": "UnXe", "value": 283},
+      {"name": "湯の家", "value": 591},
+      {"name": "雲の家", "value": 591}
+     ]
+    },
+    {
+     "name": "SPRG",
+     "children": [
+      {"name": "add", "value": 593},
+      {"name": "and", "value": 330},
+      {"name": "average", "value": 287},
+      {"name": "count", "value": 277}
+     ]
+    },
+    {
+     "name": "TH (N.O.N.)",
+     "children": [
+      {"name": "SPAAA", "value": 593},
+      {"name": "SLEEEP.th", "value": 330}
+     ]
+    },
+    {"name": "Minimum", "value": 843}
+   ]
+  }
+ ]
+}
