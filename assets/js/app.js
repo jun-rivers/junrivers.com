@@ -11,7 +11,7 @@ $(document).ready(function() {
     if (language === "zh-CN") {
       setLanguage('zh');
     } else if (language === "ja-JP") {
-      setLanguage('jp');
+      setLanguage('ja');
     } else {
       setLanguage('en');
     }

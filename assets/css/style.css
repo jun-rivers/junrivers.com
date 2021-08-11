@@ -148,7 +148,7 @@ sub {
   margin-bottom: 8.0vh;
 }
 
-.jp h1, .jp h3, .zh h1, .zh h3 {
+.ja h1, .ja h3, .zh h1, .zh h3 {
   font-family: 'ヒラギノ明朝 ProN','Hiragino Mincho ProN','YuMincho','Yu Mincho','メイリオ',Meiryo,'ＭＳ Ｐゴシック',serif;
   writing-mode: vertical-rl;
   float: right;
@@ -157,13 +157,13 @@ sub {
   letter-spacing: 0.5vw;
 }
 
-.jp h1, .zh h1 {
+.ja h1, .zh h1 {
   font-size: 8.5vmin;
   line-height: 9.0vmin;
   font-weight: 400;
 }
 
-.jp h3, .zh h3 {
+.ja h3, .zh h3 {
   font-size: 5.5vmin;
   line-height: 6.0vmin;
   font-weight: 800;
@@ -171,7 +171,7 @@ sub {
   margin-right: 4.0vw;
 }
 
-.jp h4, .zh h4 {
+.j h4, .zh h4 {
   font-family: 'ヒラギノ明朝 ProN','Hiragino Mincho ProN','YuMincho','Yu Mincho','メイリオ',Meiryo,'ＭＳ Ｐゴシック',serif;
 }
 

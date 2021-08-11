@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>map01</title>
+    <title>Mobile Capsule Log</title>
 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
@@ -66,7 +66,7 @@
         <div id="discovered-log-list" class="listing"></div>
     </div>
 
-    <script>
+<script>
         var regionId = 'FUUUN-jp';
         var locationId = 'FUUUN-L-000';
         var capsuleId = '60640ff6bac7917c3d32e452';
@@ -80,6 +80,7 @@
 </script>
 <script src="https://assets.exp.is/js/exp-lobby-ui.js?lu=20200909"></script>
 <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+<script src='mobile-log.js'></script>
 
 <script>
     var listingEl = document.getElementById('discovered-log-list');
@@ -209,47 +210,47 @@
 
             // Get Route Points from EXP.pms
 
-            d3.json( //when doing demo, we use this.
-                    // 'https://assets.exp.is/js/VOY-example-path.geojson',
-                    // 'VOY-example-path.geojson',
-                    'kinoya_to_hitsuki.geojson',
-                    function (err, data) {
-                    if (err) throw err;
+            // d3.json( //when doing demo, we use this.
+            //         // 'https://assets.exp.is/js/VOY-example-path.geojson',
+            //         // 'VOY-example-path.geojson',
+            //         'kinoya_to_hitsuki.geojson',
+            //         function (err, data) {
+            //         if (err) throw err;
 
-                    // save fill coordinate list for later
-                    routePoints = data.features[0].geometry.coordinates;
+            //         // save fill coordinate list for later
+            //         routePoints = data.features[0].geometry.coordinates;
 
-                    // start by showing just the first coordinate
-                    data.features[0].geometry.coordinates = [routePoints[0]];
+            //         // start by showing just the first coordinate
+            //         data.features[0].geometry.coordinates = [routePoints[0]];
 
-                    routeData = data;
+            //         routeData = data;
 
-            // $.post("https://trekking.exp.is/api/mobiletrackings/map2", { 
-            //     capsule: capsuleId,
-            //     start: lastAction, //moment of check-in
-            //     end: currentMoment,
-            // }, function( data ) {
-            //     console.log( data );
-            //     if (data.mobiletrackings.length > 0) {
-            //         for (var i=0; i < data.mobiletrackings.length; i++) {
-            //            routePoints.push(data.mobiletrackings[i].location.coordinates);
-            //        }
-            //     } else {
-            //         routePoints.push(defaultPosition);
-            //     }
+            $.post("https://trekking.exp.is/api/mobiletrackings/map2", { 
+                capsule: capsuleId,
+                start: lastAction, //moment of check-in
+                end: currentMoment,
+            }, function( data ) {
+                console.log( data );
+                if (data.mobiletrackings.length > 0) {
+                    for (var i=0; i < data.mobiletrackings.length; i++) {
+                       routePoints.push(data.mobiletrackings[i].location.coordinates);
+                   }
+                } else {
+                    routePoints.push(defaultPosition);
+                }
 
-            //     routeData = {
-            //         "type": "FeatureCollection",
-            //         "features": [
-            //         {
-            //             "type": "Feature",
-            //             "geometry": {
-            //                 "type": "LineString",
-            //                 "coordinates": [routePoints[0]]
-            //             }
-            //         }
-            //         ]
-            //     }
+                routeData = {
+                    "type": "FeatureCollection",
+                    "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [routePoints[0]]
+                        }
+                    }
+                    ]
+                }
 
                 map.addSource('route', { type: 'geojson', data: routeData }); // map.addSource('route', routeData);
                 
@@ -331,22 +332,6 @@
                     });
                 }, freq);
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             function searchLogs (x, y) {
                 var bbox = [
