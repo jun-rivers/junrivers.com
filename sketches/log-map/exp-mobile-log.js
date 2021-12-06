@@ -1,0 +1,378 @@
+var listingEl = document.getElementById('discovered-log-list');
+var logs = []; // Holds visible log features for filtering
+
+mapboxgl.accessToken = 'pk.eyJ1IjoianJpdmVycyIsImEiOiJjams5dGl0dXcyMzlmM3BtZXFscnN5YncwIn0.WcweEk33xntcYnMCzrjoSw';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: mapStyle,
+    center: defaultPosition,
+    zoom: 8,
+    minZoom: 8,
+    pitch: 0,
+    bearing: 0,
+    container: 'map',
+    antialias: true,
+    interactive: true
+});
+
+map.on('load', function() {
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+    // add the DEM source as a terrain layer with exaggerated height
+    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.1 });
+    map.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [0.0, 0.0],
+            'sky-atmosphere-sun-intensity': 15
+        }
+    });
+    if (has3D) {
+        map.addLayer({
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+                'fill-extrusion-color': '#aaa',
+                // use an 'interpolate' expression to add a smooth transition effect to the
+                // buildings as the user zooms in
+                'fill-extrusion-height': [
+                    "interpolate", ["linear"], ["zoom"],
+                    15, 0,
+                    15.05, ["get", "height"]
+                ],
+                'fill-extrusion-base': [
+                    "interpolate", ["linear"], ["zoom"],
+                    15, 0,
+                    15.05, ["get", "min_height"]
+                ],
+                'fill-extrusion-opacity': .3
+            }
+        }, labelLayerId);
+    }
+    map.addSource('logs', {
+        'type': 'vector',
+        'url': 'mapbox://jrivers.ckpf52fbn0o8f21t6zboszgmt-0uat3'
+    });
+    map.addLayer(
+    {
+        'id': 'logs',
+        'type': 'circle',
+        'source': 'logs',
+        'source-layer': 'FUUUN.log',
+        'paint': {
+            'circle-radius': 6,
+            'circle-color': '#B42222'
+        },
+        'filter': ['==', '$type', 'Point']
+    },
+    labelLayerId
+    );
+
+    map.addLayer(
+    {
+        'id': 'logs-discovered',
+        'type': 'circle',
+        'source': 'logs',
+        'source-layer': 'FUUUN.log',
+        'paint': {
+            'circle-radius': 6,
+            'circle-color': '#000000'
+        },
+        'filter': ['in', 'title', '']
+    },
+    labelLayerId);
+
+    // Insert the layer beneath any symbol layer.
+    var layers = map.getStyle().layers;
+
+    var labelLayerId;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+            labelLayerId = layers[i].id;
+            break;
+        }
+    }
+    map.moveLayer('3d-buildings', 'logs');
+    // Add zoom and rotation controls to the map.
+    map.addControl(new mapboxgl.NavigationControl());
+    // Create a popup, but don't add it to the map yet.
+    var popup = new mapboxgl.Popup({
+        closeButton: false
+    });
+
+    // Get last action from firebase as the moment of check-in hence the start of the trip
+    var routePoints = [];
+    var routeData = {};
+    var currentMoment = moment().format('YYYY-MM-DD HH:mm');
+    var lastMoment = currentMoment;
+
+    // console.log(moment().format('YYYY-MM-DD HH:mm'));
+    locationRef.once('value',function(snapshot) {
+        lastAction = snapshot.child("welcome-guest").child("last-action").val();
+        console.log(lastAction);
+
+        // map.dragPan.disable();
+
+        // Get Route Points from EXP.pms
+
+        // d3.json( //when doing demo, we use this.
+        //         // 'https://assets.exp.is/js/VOY-example-path.geojson',
+        //         // 'VOY-example-path.geojson',
+        //         'kinoya_to_hitsuki.geojson',
+        //         function (err, data) {
+        //         if (err) throw err;
+
+        //         // save fill coordinate list for later
+        //         routePoints = data.features[0].geometry.coordinates;
+
+        //         // start by showing just the first coordinate
+        //         data.features[0].geometry.coordinates = [routePoints[0]];
+
+        //         routeData = data;
+
+        $.post("https://trekking.exp.is/api/mobiletrackings/map2", { 
+            capsule: capsuleId,
+            start: lastAction, //moment of check-in
+            end: currentMoment,
+        }, function( data ) {
+            console.log( data );
+            if (data.mobiletrackings.length > 0) {
+                for (var i=0; i < data.mobiletrackings.length; i++) {
+                   routePoints.push(data.mobiletrackings[i].location.coordinates);
+               }
+            } else {
+                routePoints.push(defaultPosition);
+            }
+
+            routeData = {
+                "type": "FeatureCollection",
+                "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [routePoints[0]]
+                    }
+                }
+                ]
+            }
+
+            map.addSource('route', { type: 'geojson', data: routeData });
+            
+            map.addLayer({
+                'id': 'route',
+                'type': 'line',
+                'source': 'route',
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                  'line-color': 'gray',
+                  'line-width': 3,
+                  'line-dasharray': [2, 4],
+                },
+            });  
+            var el = document.createElement('div');
+            el.className = 'markers';
+            el.style.backgroundImage = 'url('+capsuleMarker+')';
+            el.style.width = '46px';
+            el.style.height = '46px';
+
+            var marker = new mapboxgl.Marker(el,{offset:[0,-10]})
+            .setLngLat(routePoints[0])
+            .addTo(map);
+            map.flyTo({
+                center: routePoints[0],
+                pitch: 60,
+                zoom: 15,
+            });
+
+            // on a regular basis, add more coordinates from the saved list and update the map
+            var i = 0;
+            setTimeout(function() {
+                var timer = window.setInterval(function () {
+                    if (i < routePoints.length) {
+                        routeData.features[0].geometry.coordinates.push(routePoints[i]);
+                        // console.log(routeData);
+                        map.getSource('route').setData(routeData);
+                        map.panTo(routePoints[i]);
+                        marker.setLngLat(routePoints[i]);
+                        i++;
+                    } else {
+                        window.clearInterval(timer);
+                        var point = map.project(routePoints[i-1]);
+                        console.log(point);
+                        searchLogs(point.x, point.y);
+                        continuedUpdates(updateFrequency);
+                    }
+                }, drawSpeed);
+            }, 5000);
+
+        }, "json");
+
+        function continuedUpdates (freq) {
+            var timer = window.setInterval(function () {
+                lastMoment = currentMoment;
+                currentMoment = moment().format('YYYY-MM-DD HH:mm');
+                $.post("https://trekking.exp.is/api/mobiletrackings/map2", { 
+                    capsule: capsuleId,
+                    start: lastMoment, //moment of first load;
+                    end: currentMoment,
+                }, function( data ) {
+                    console.log( data );
+                    if (data.mobiletrackings.length > 0) {
+                        for (var i=0; i < data.mobiletrackings.length; i++) {
+                            routePoints.push(data.mobiletrackings[i].location.coordinates);
+                            routeData.features[0].geometry.coordinates.push(routePoints[routePoints.length-1]);
+                            map.getSource('route').setData(routeData);
+                            map.panTo(routePoints[i]);
+                            marker.setLngLat(routePoints[i]);
+                            var point = map.project(routePoints[i]);
+                            searchLogs(point.x, point.y);
+                       }
+                    } else {
+                        console.log('no new route points since last fetch.');
+                    }
+                });
+            }, freq);
+        }
+
+        function searchLogs (x, y) {
+            var bbox = [
+                [x - searchRange, y - searchRange],
+                [x + searchRange, y + searchRange]
+            ];
+            var features = map.queryRenderedFeatures(bbox, {
+                layers: ['logs']
+            });
+            console.log(features);
+
+            // Run through the selected features and set a filter
+            // to match features with unique url to activate
+            // the `discovered-logs` layer.
+            var filter = features.reduce(
+                function (memo, feature) {
+                    memo.push(feature.properties.title);
+                    console.log(feature.properties.title);
+                    return memo;
+                },
+                ['in', 'title']
+                );
+            map.setFilter('logs-discovered', filter);                 
+            // Populate the sidebar with filtered results
+            renderListings(features);
+        }
+
+        // map.on('click', function (e) {
+        //     console.log(e.point);
+        //     // set bbox as 5px reactangle area around clicked point
+        //     searchLogs(e.point.x, e.point.y);
+        // });
+
+        map.on('mousemove', 'logs-discovered', function (e) {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+             
+            // Populate the popup and set its coordinates based on the feature.
+            var feature = e.features[0];
+            popup
+            .setLngLat(feature.geometry.coordinates)
+            .setText(
+                feature.properties.title
+                )
+            .addTo(map);
+        });
+
+        map.on('mouseleave', 'logs-discovered', function () {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        });
+
+        map.on('movestart', function () {
+            // reset features filter as the map starts moving
+            map.setFilter('logs', ['has', 'url']);
+        });
+         
+        map.on('moveend', function () {
+            var features = map.queryRenderedFeatures({ layers: ['logs-discovered'] });
+             
+            if (features) {
+                var uniqueFeatures = getUniqueFeatures(features, 'title');
+                // Populate features for the listing overlay.
+                // renderListings(uniqueFeatures);
+                 
+                // Store the current features in sn `logs` variable
+                logs = uniqueFeatures;
+            }
+        });
+
+        map.on('zoomend', function() {
+            var point = map.project(routePoints[routePoints.length-1]);
+            searchLogs(point.x, point.y);
+        });
+
+        function getUniqueFeatures(array, comparatorProperty) {
+            var existingFeatureKeys = {};
+            // Because features come from tiled vector data, feature geometries may be split
+            // or duplicated across tile boundaries and, as a result, features may appear
+            // multiple times in query results.
+            var uniqueFeatures = array.filter(function (el) {
+                if (existingFeatureKeys[el.properties[comparatorProperty]]) {
+                    return false;
+                } else {
+                    existingFeatureKeys[el.properties[comparatorProperty]] = true;
+                    return true;
+                }
+            });
+            return uniqueFeatures;
+        }
+
+        function normalize(string) {
+            return string.trim().toLowerCase();
+        }
+
+        function renderListings(features) {
+            var empty = document.createElement('p');
+            // Clear any existing listings
+            listingEl.innerHTML = '';
+            if (features.length) {
+                features.forEach(function (feature) {
+                    console.log(feature);
+                    var prop = feature.properties;
+                    var item = document.createElement('a');
+                    item.href = prop.url;
+                    item.target = '_blank';
+                    item.textContent = prop.title;
+                    item.addEventListener('mouseover', function () {
+                    // Highlight corresponding feature on the map
+                        popup
+                        .setLngLat(feature.geometry.coordinates)
+                        .setText(
+                            feature.properties.title
+                        )
+                        .addTo(map);
+                    });
+                    listingEl.appendChild(item);
+                });
+            } else {
+                empty.textContent = 'No discovered logs nearby..';
+                listingEl.appendChild(empty);
+            }
+        }
+
+        // Call this function on initialization
+        // passing an empty array to render an empty state
+        renderListings([]);
+    });
+});
