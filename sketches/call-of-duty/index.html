@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Call Of Duty (Draft 01)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<style type="text/css">
 	body {
 		font-family: monospace;
@@ -30,6 +31,10 @@
 		border: 1px solid red;
 		color: red;
 	}
+	#target_no {
+		padding: 14px;
+		margin: 10px;
+	}
 	</style>
 </head>
 <body>
@@ -39,12 +44,19 @@
 		<h2>Made for XO.hkg</h2>
 		<h2>Note: You must be in HKG and viewing this page with a mobile phone for this to work.</h2>
 		<br/><br/>
-		<a class="call-btn" title="Click to Start Redirection" href="tel:29458888,,1,,,,,,,,,,,,,,1,,96046049,,,,,,,,,,0,,4,,1,,316455,,62730720,,1,,">Start Redirection</a>
+		<label>Target Phone No.</label>
+		<input type="text" id="target_no" value="96046049">
+		<a class="call-btn" id="forwarder" title="Click to Start Redirection" href="tel:29458888,,1,,,,,,,,,,,,,,1,,96046049,,,,,,,,,,0,,4,,1,,316455,,96046049,,,1,,">Start Redirection</a>
 		<a class="call-btn cancel" title="Click to Cancel Redirection" href="tel:29458888,,1,,,,,,,,,,,,,,1,,96046049,,,,,,,,,,0,,4,,2,,316455">Cancel Redirection</a>
 	</div>
 	<footer>
 		<h2>By |||. 2022</h2>
 	</footer>
+	<script type="text/javascript">
+		$('#target_no').on('input', function() {
+		  $('#forwarder').prop('href', "tel:29458888,,1,,,,,,,,,,,,,,1,,96046049,,,,,,,,,,0,,4,,1,,316455,,"+this.value+",,,1,,");
+		});
+	</script>
 </body>
 </html>
 
@@ -57,7 +69,7 @@
 4      服務                       4 sec
 1         飛線                     4 sec
 316455     Password    4 sec
-93758210要飛的號碼 4 sec
+93758210要飛的號碼 6 sec
 1 確認                             4 sec
 -->
 
