@@ -181,7 +181,7 @@ aside {
   top: 50.0vh;
   writing-mode: vertical-rl;
   text-combine-upright: digits 2;
-  font-size: 0.6em;
+  font-size: 0.5em;
   font-weight: 100;
   letter-spacing: 0.1em;
   animation: fadein 0.5s forwards ease-out;
@@ -263,6 +263,11 @@ aside span {
   right: 0;
   width: 100px;
   z-index: 999;
+}
+
+.sketch-list {
+  font-size: .8em;
+  line-height: 1.5em;
 }
 
 body.show-artist-statement #artist-statement {
