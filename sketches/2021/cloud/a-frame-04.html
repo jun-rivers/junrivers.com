@@ -28,18 +28,92 @@
         font-size: 1.25em;
         color: white;
       }
+
+      .circularVision {
+        position: fixed;
+        width: 80vw;
+        height: 80vw;
+        border-radius: 40vw;
+        background: none;
+        border: 4px solid white;
+        top: calc(50vh - 40vw);
+        left: 10vw;
+        opacity: 0.5;
+      }
+      .circularVisionProgress {
+        width: 80vw;
+        height: 80vw;
+        border-radius: 40vw;
+        background: none;
+        border: 4px solid white;
+        top: calc(50vh - 40vw);
+        left: 10vw;
+        opacity: 1;
+      }
+
+      .circularVision .circularVisionProgress .mask,
+      .circularVision .circularVisionProgress .fill {
+        width: 150px;
+        height: 150px;
+        position: absolute;
+        border-radius: 50%;
+      }
+
+      .mask .fill {
+        clip: rect(0px, 75px, 150px, 0px);
+        background-color: #227ded;
+      }
+
+      .mask.full,
+      .circle .fill {
+        animation: fill ease-in-out 3s;
+        transform: rotate(135deg);
+      }
+
+      @keyframes fill {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(135deg);
+        }
+      }
     </style>
     <script>
-      var observed, observationTime;
+      var observed, observationFrames
+      observationFrames = 0;
+      let observing = false;
 
       window.addEventListener("markerFound", (event) => {
         console.log('markerFound');
-        observationTime++;
+        observing = true;
+      });
+
+      window.addEventListener("markerLost", (event) => {
+        console.log('markerLost');
+        observing = false;
       });
       
-      if (observationTime > 1000) {
-        window.close();
-      }
+      window.onload = function() {    
+        function observationCheck() {
+          if (observing) {
+            observationFrames++;
+          }
+          if (observationFrames > 500) {
+            console.log('observation done.');
+            window.close();
+          }
+        }
+        setInterval(observationCheck, 1);
+       }
+
+       // Tasks:
+       // loading consistency
+       // take in variables from urlparam: modelUrl, game id, step id, patternUrl, scaleInteger, observationFrames;
+       // send 'done' message to parent;
+       // Progress game after sending back
+       // Location example;
+      
     </script>
   </head>
 
@@ -47,6 +121,14 @@
     <!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
     <div class="arjs-loader">
       <div>Loading, please wait...</div>
+    </div>
+
+    <div class="circularVision mask">
+      <div class="circularVisionProgress">
+        <div class="mask half">
+            <div class="fill"></div>
+        </div>
+      </div>
     </div>
 
     <!-- a-frame scene -->

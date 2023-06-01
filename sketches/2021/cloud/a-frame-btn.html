@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>button to open window</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css?v=0.3">
+	</head>
+
+	<body>
+		<div id="info">
+			<h3>
+				AFrame Test<a href="https://threejs.org" target="_blank" rel="noopener noreferrer"></a> <!-- audio visualizer -->
+				04
+			</h3>
+		</div>
+
+		<div id="overlay">
+			<button id="startButton">Open</button>
+			<br/>
+			<button id="closeButton">Close</button>
+		</div>
+
+		<script type="module">
+			let openedWindow;
+
+			const startButton = document.getElementById( 'startButton' );
+			startButton.addEventListener( 'click', function () {
+
+				openedWindow = window.open("a-frame-04.html");
+
+			} );
+
+			const closeButton = document.getElementById( 'closeButton' );
+			closeButton.addEventListener( 'click', function () {
+
+				openedWindow.close();
+
+			} );
+
+		</script>
+
+	</body>
+</html>
