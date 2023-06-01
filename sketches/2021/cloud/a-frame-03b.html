@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
 <title>AR.js A-Frame Location-based</title>
 
 <style>
@@ -45,7 +46,7 @@
 
     el.addEventListener("gps-camera-update-position", e => {
         if(!testEntityAdded) {
-            alert(`v03b-blending materials: Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            alert(`v03b-blending vid: Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
                 x: 20, 
@@ -66,9 +67,9 @@
 
             const video = document.createElement("a-video");
             video.setAttribute("scale", {
-                x: s, 
-                y: s,
-                z: s
+                x: scale, 
+                y: scale,
+                z: scale
             });
             video.setAttribute("position", {
                 x: 0, 
@@ -76,25 +77,31 @@
                 z: 0
             });
             video.setAttribute('src', mURL );
+            video.setAttribute('transparent', 'true' );
+            video.setAttribute('opacity', 0.5 );
+            video.setAttribute('material', {
+                shader: 'flat',
+                blending: 'multiply' 
+            });
             video.setAttribute('gps-new-entity-place', {
                 latitude: lat,
                 longitude: lng
             });
-            document.querySelector("a-scene").appendChild(video);
+            // document.querySelector("a-scene").appendChild(video);
 
             const plane = document.createElement("a-entity");
             plane.setAttribute("scale", {
-                x: s, 
-                y: s,
-                z: s
+                x: scale, 
+                y: scale,
+                z: scale
             });
             plane.setAttribute("position", {
-                x: 10, 
+                x: 0, 
                 y: 0,
                 z: 0
             });
             plane.setAttribute('geometry', "primitive: plane" );
-            plane.setAttribute('material', "shader: ocean; color: blue; wave-height: 10" );
+            plane.setAttribute('material', "shader: flat; blending: multiply; src: #videoMushroom" );
             plane.setAttribute('gps-new-entity-place', {
                 latitude: lat,
                 longitude: lng
@@ -111,9 +118,18 @@
 </head>
 <body>
 <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true'>
+    <a-assets>
+        <video id="videoMushroom" preload="auto"
+               src="https://storage.googleapis.com/artifacts-cms/ezgif_com_gif_maker_5c0fe6eb61/ezgif_com_gif_maker_5c0fe6eb61.mp4"
+               width="90" height="90" autoplay loop="true"
+               crossOrigin="anonymous"></video>
+    </a-assets>
     <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
-    <a-entity geometry="primitive: plane"
-          material="shader: ocean; color: blue; wave-height: 10"></a-entity>
+    <a-entity material="shader: flat; blending: multiply; src: #videoMushroom"
+                geometry="primitive: plane; width: 160; height: 90;"
+                position="0 60 -250"
+                rotation="0 35 0">
+    </a-entity>
 </a-scene>
 </body>
 </html>
