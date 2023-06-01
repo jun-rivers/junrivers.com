@@ -7,12 +7,39 @@
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/three.js/build/ar-threex-location-only.js" ></script>
 
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+<script><script type="text/javascript">
+  window.onload = () => {
+    let testEntityAdded = false;
+
+    const el = document.querySelector("[gps-new-camera]");
+
+    el.addEventListener("gps-camera-update-position", e => {
+        if(!testEntityAdded) {
+            alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            // Add a box to the north of the initial GPS position
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20, 
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute('material', { color: 'red' } );
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + 0.001,
+                longitude: e.detail.position.longitude
+            });
+            document.querySelector("a-scene").appendChild(entity);
+        }
+        testEntityAdded = true;
+    });
+};
+</script>
 </head>
 <body>
 <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true'>
     <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
     <a-cylinder material='color: red' gps-new-entity-place="latitude: 35.143; longitude: 139.078" scale="10 10 10"></a-cylinder>
-    <a-box material='color: green' gps-new-entity-place="latitude: 35.144; longitude: 139.079" scale="10 10 10"></a-cylinder>
+    <!-- <a-box material='color: green' gps-new-entity-place="latitude: 35.144; longitude: 139.079" scale="10 10 10"></a-cylinder> -->
     <a-text
       value="Hey."
       look-at="[gps-new-camera]"
