@@ -29,6 +29,18 @@
         color: white;
       }
     </style>
+    <script>
+      var observed, observationTime;
+
+      window.addEventListener("markerFound", (event) => {
+        console.log('markerFound');
+        observationTime++;
+      });
+      
+      if (observationTime > 1000) {
+        window.close();
+      }
+    </script>
   </head>
 
   <body style="margin : 0px; overflow: hidden;">
@@ -39,6 +51,7 @@
 
     <!-- a-frame scene -->
     <a-scene
+      emitevents="true";
       vr-mode-ui="enabled: false;"
       renderer="logarithmicDepthBuffer: true;"
       embedded
