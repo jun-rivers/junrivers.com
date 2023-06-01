@@ -170,7 +170,7 @@
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, Math.PI * 2 * percent, false);
             ctx.strokeStyle = color;
-                ctx.lineCap = 'round'; // butt, round or square
+            ctx.lineCap = 'round'; // butt, round or square
             ctx.lineWidth = lineWidth
             ctx.stroke();
         };
@@ -183,10 +183,9 @@
         console.log('arjs-nft-loaded');
         console.log(event);
 
-        aEntity = document.createElement('a-entity');
         aEntity.setAttribute('gltf-model', mURL);
         aEntity.setAttribute('scale', scale+' '+scale+' '+scale);
-        aEntity.setAttribute('position', '300 100 0');
+        // aEntity.setAttribute('position', '300 100 0'); 
         aEntity.setAttribute('rotation', '-90 180 180');
 
         aNft.appendChild(aEntity);
@@ -197,6 +196,7 @@
         console.log(nft);
 
         var msg = nft.detail;
+        aEntity = document.createElement('a-entity');
         aEntity.setAttribute('position', (msg.width / msg.dpi * 2.54 * 10)+' '+(msg.height / msg.dpi * 2.54 * 10)+' 0');
         console.log('position x');
         console.log(msg.width / msg.dpi * 2.54 * 10);
