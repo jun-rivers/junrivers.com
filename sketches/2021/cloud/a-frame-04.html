@@ -5,8 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Image based tracking AR.js demo</title>
     <!-- import aframe and then ar.js with image tracking / location based features -->
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
 
     <!-- style for the loader -->
     <style>
@@ -29,13 +27,12 @@
         color: white;
       }
 
-      .circularVision {
+      div.circularVision {
         position: fixed;
         width: 80vw;
         height: 80vw;
         border-radius: 40vw;
         background: none;
-        border: 4px solid white;
         top: calc(50vh - 40vw);
         left: 10vw;
         opacity: 0.5;
@@ -47,12 +44,12 @@
           top:0;
           left:0;
       }
-      span {
-          color:#555;
+      .counter {
+          color:#ddd;
           display:block;
-          line-height:220px;
+          line-height:80vw;
           text-align:center;
-          width:220px;
+          width:80vw;
           font-family:sans-serif;
           font-size:40px;
           font-weight:100;
@@ -68,52 +65,29 @@
       }
     </style>
     <script>
-      var el = document.getElementById('graph'); // get canvas
+      // Query String Handling
+      const queryString = window.location.search;
+      console.log(queryString);
+      const urlParams = new URLSearchParams(queryString);
+      const pattern = urlParams.get('p')
+      const model = urlParams.get('m')
+      const duration = urlParams.get('d') || 100
+      const scale = urlParams.get('s') || 1
+      console.log(duration);
 
-      var options = {
-          percent:  el.getAttribute('data-percent') || 25,
-          size: el.getAttribute('data-size') || 220,
-          lineWidth: el.getAttribute('data-line') || 15,
-          rotate: el.getAttribute('data-rotate') || 0
-      }
+      let aNft;
+      let aEntity;
 
-      var canvas = document.createElement('canvas');
-      var span = document.createElement('span');
-      span.textContent = options.percent + '%';
-          
-      if (typeof(G_vmlCanvasManager) !== 'undefined') {
-          G_vmlCanvasManager.initElement(canvas);
-      }
+      const pURL = "https://storage.googleapis.com/artifacts-cms/"+pattern;
+      const mURL = "https://storage.googleapis.com/artifacts-cms/"+model;
 
-      var ctx = canvas.getContext('2d');
-      canvas.width = canvas.height = options.size;
 
-      el.appendChild(span);
-      el.appendChild(canvas);
 
-      ctx.translate(options.size / 2, options.size / 2); // change center
-      ctx.rotate((-1 / 2 + options.rotate / 180) * Math.PI); // rotate -90 deg
-
-      //imd = ctx.getImageData(0, 0, 240, 240);
-      var radius = (options.size - options.lineWidth) / 2;
-
-      var drawCircle = function(color, lineWidth, percent) {
-          percent = Math.min(Math.max(0, percent), 1);
-          ctx.beginPath();
-          ctx.arc(0, 0, radius, 0, Math.PI * 2 * percent, false);
-          ctx.strokeStyle = color;
-              ctx.lineCap = 'round'; // butt, round or square
-          ctx.lineWidth = lineWidth
-          ctx.stroke();
-      };
-
-      drawCircle('#efefef', options.lineWidth, 100 / 100);
-      drawCircle('#555555', options.lineWidth, options.percent / 100);
-    </script>
-    <script>
-      var observed, observationFrames
-      observationFrames = 0;
+      // Observation Logic
+      let observationFrames = 0;
       let observing = false;
+      let observationTarget = duration;
+      let progress = 0;
 
       window.addEventListener("markerFound", (event) => {
         console.log('markerFound');
@@ -122,43 +96,138 @@
 
       window.addEventListener("markerLost", (event) => {
         console.log('markerLost');
+        console.log(observationFrames);
         observing = false;
       });
       
       window.onload = function() {    
+
+
         function observationCheck() {
           if (observing) {
             observationFrames++;
+            progress = (observationFrames / observationTarget) * 100;
+            counter.textContent = Math.min(Math.floor(progress), 100) + '%';
+            drawCircle('#555555', options.lineWidth, progress / 100);
           }
-          if (observationFrames > 500) {
+          if (observationFrames > observationTarget) {
             console.log('observation done.');
             // window.close();
-            window.opener.sendARMessage("done");
+            if (window.opener) {
+              window.opener.sendARMessage("done");
+            }
+            clearInterval(observationFrameByFrame);
           }
+
         }
-        setInterval(observationCheck, 1);
-       }
+        const observationFrameByFrame = setInterval(observationCheck, 1);
+
+
+        // Progress Circle
+        const graph = document.getElementById('graph');
+        const aScene = document.getElementById('aScene');
+
+        let options = {
+            percent:  0,
+            size: (0.8 * document.documentElement.clientWidth),
+            lineWidth: 8,
+            rotate: 0
+          }
+
+        const canvas = document.createElement('canvas');
+        const counter = document.createElement('span');
+
+        counter.className = "counter";
+        counter.textContent = options.percent + '%';
+            
+        if (typeof(G_vmlCanvasManager) !== 'undefined') {
+            G_vmlCanvasManager.initElement(canvas);
+        }
+
+        var ctx = canvas.getContext('2d');
+        canvas.width = canvas.height = options.size;
+
+        aNft = document.createElement('a-nft');
+        aNft.setAttribute('type', 'nft');
+        aNft.setAttribute('url', pURL);
+        aNft.setAttribute('smooth', 'true');
+        aNft.setAttribute('smoothCount', '10');
+        aNft.setAttribute('smoothTolerance', '.01');
+        aNft.setAttribute('smoothThreshold', '5');
+
+        graph.appendChild(counter);
+        graph.appendChild(canvas);
+        aScene.appendChild(aNft);
+
+        ctx.translate(options.size / 2, options.size / 2); // change center
+        ctx.rotate((-1 / 2 + options.rotate / 180) * Math.PI); // rotate -90 deg
+
+        //imd = ctx.getImageData(0, 0, 240, 240);
+        var radius = (options.size - options.lineWidth) / 2;
+
+        var drawCircle = function(color, lineWidth, percent) {
+            percent = Math.min(Math.max(0, percent), 1);
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2 * percent, false);
+            ctx.strokeStyle = color;
+                ctx.lineCap = 'round'; // butt, round or square
+            ctx.lineWidth = lineWidth
+            ctx.stroke();
+        };
+
+        drawCircle('#efefef', options.lineWidth, 100 / 100);
+        drawCircle('#555555', options.lineWidth, options.percent / 100);
+      }
+
+      window.addEventListener("arjs-nft-loaded", (event) => {
+        console.log('arjs-nft-loaded');
+        console.log(event);
+
+        aEntity = document.createElement('a-entity');
+        aEntity.setAttribute('gltf-model', mURL);
+        aEntity.setAttribute('scale', scale+' '+scale+' '+scale);
+        aEntity.setAttribute('position', '300 100 0');
+        aEntity.setAttribute('rotation', '-90 180 180');
+
+        aNft.appendChild(aEntity);
+
+      });
+
+      window.addEventListener('arjs-nft-init-data', function(nft) {
+        console.log(nft);
+
+        var msg = nft.detail;
+        aEntity.setAttribute('position', (msg.width / msg.dpi * 2.54 * 10)+' '+(msg.height / msg.dpi * 2.54 * 10)+' 0');
+        console.log('position x');
+        console.log(msg.width / msg.dpi * 2.54 * 10);
+        console.log('position y');
+        console.log(msg.height / msg.dpi * 2.54 * 10);
+      })
 
        // Tasks:
        // loading consistency
-       // take in variables from urlparam: modelUrl, game id, step id, patternUrl, scaleInteger, observationFrames;
-       // send 'done' message to parent;
-       // Progress game after sending back
+       // O take in variables from urlparam: modelUrl, game id, step id, patternUrl, scaleInteger, observationFrames;
+       // O circular progress bar
+       // O send 'done' message to parent;
+       // O Progress game after sending back
        // Location example;
+       // Marker example;
       
     </script>
+    <script src="js/aframe-master.min.js"></script>
+    <script src="js/aframe-ar-nft.js"></script>
   </head>
 
   <body style="margin : 0px; overflow: hidden;">
     <!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
-    <!-- <div class="arjs-loader">
+    <div class="arjs-loader">
       <div>Loading, please wait...</div>
-    </div> -->
+    </div>
 
-    <div class="chart circularVision" id="graph" data-percent="90"></div>
+    <div class="chart circularVision" id="graph" data-percent="90" data-size="300"></div>
 
     <!-- a-frame scene -->
-    <a-scene
+    <a-scene id="aScene" debug 
       emitevents="true";
       vr-mode-ui="enabled: false;"
       renderer="logarithmicDepthBuffer: true;"
@@ -167,23 +236,7 @@
       <!-- a-nft is the anchor that defines an Image Tracking entity -->
       <!-- on 'url' use the path to the Image Descriptors created before. -->
       <!-- the path should end with the name without the extension e.g. if file is trex.fset' the path should end with trex -->
-      <a-nft
-        type="nft"
-        url="https://storage.googleapis.com/artifacts-cms/ad8xs-0hh6n"
-        smooth="true"
-        smoothCount="10"
-        smoothTolerance=".01"
-        smoothThreshold="5">
-          <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
-          <!-- gltf-model="./data/Flamingo.glb" -->
-          <a-entity
-            gltf-model="https://storage.googleapis.com/artifacts-cms/Flamingo.glb"
-            scale="1.5 1.5 1.5"
-            position="0 0 0"
-            rotation="-90 180 180"
-          >
-          </a-entity>
-      </a-nft>
+      
       <!-- static camera that moves according to the device movemenents -->
       <a-entity camera></a-entity>
     </a-scene>

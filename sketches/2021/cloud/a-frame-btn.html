@@ -22,19 +22,29 @@
 		</div>
 
 		<script type="module">
-			let openedWindow;
+			let arScanner;
 
 			const startButton = document.getElementById( 'startButton' );
 			startButton.addEventListener( 'click', function () {
 
-				openedWindow = window.open("a-frame-04.html");
-
-			} );
+				arScanner = window.open('http://localhost:8000/a-frame-04.html?p=ad8xs-0hh6n&m=Flamingo.glb&d=1000&s=2.5', '_blank', 'directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no');
+			      	window.sendARMessage = ((trigger) => {
+				        console.log('init sendARMessage')
+				        console.log(trigger)
+				        return (msg)=> {
+				          console.log('sendARMessage')
+				          console.log(trigger)
+				          arScanner?.close()
+				          console.log(msg);
+			        	}
+			     	}
+			    )("trigger")
+			});
 
 			const closeButton = document.getElementById( 'closeButton' );
 			closeButton.addEventListener( 'click', function () {
 
-				openedWindow.close();
+				arScanner.close();
 
 			} );
 
