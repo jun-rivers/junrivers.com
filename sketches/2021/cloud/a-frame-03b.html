@@ -37,8 +37,8 @@
     const lat = urlParams.get('lat')
     const lng = urlParams.get('lng')
     const yOffset = urlParams.get('y')
-    const model = urlParams.get('m')
-    const mURL = "https://storage.googleapis.com/artifacts-cms/" + model;
+    const material = urlParams.get('m')
+    const mURL = "https://storage.googleapis.com/artifacts-cms/" + material;
 
     const el = document.querySelector("[gps-new-camera]");
 
@@ -62,6 +62,24 @@
                 longitude: lng
             });
             document.querySelector("a-scene").appendChild(entity);
+
+            const video = document.createElement("a-video");
+            video.setAttribute("scale", {
+                x: 20, 
+                y: 20,
+                z: 20
+            });
+            video.setAttribute("position", {
+                x: 0, 
+                y: 0,
+                z: 0
+            });
+            video.setAttribute('src', mURL );
+            video.setAttribute('gps-new-entity-place', {
+                latitude: lat,
+                longitude: lng
+            });
+            document.querySelector("a-scene").appendChild(video);
         }
         testEntityAdded = true;
     });
