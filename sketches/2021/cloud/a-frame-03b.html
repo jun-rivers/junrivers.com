@@ -76,12 +76,30 @@
                 z: 0
             });
             video.setAttribute('src', mURL );
-            video.setAttribute('material', { blending: 'multiply' } );
             video.setAttribute('gps-new-entity-place', {
                 latitude: lat,
                 longitude: lng
             });
             document.querySelector("a-scene").appendChild(video);
+
+            const plane = document.createElement("a-entity");
+            plane.setAttribute("scale", {
+                x: s, 
+                y: s,
+                z: s
+            });
+            plane.setAttribute("position", {
+                x: 10, 
+                y: 0,
+                z: 0
+            });
+            plane.setAttribute('geometry', "primitive: plane" );
+            plane.setAttribute('material', "shader: ocean; color: blue; wave-height: 10" );
+            plane.setAttribute('gps-new-entity-place', {
+                latitude: lat,
+                longitude: lng
+            });
+            document.querySelector("a-scene").appendChild(plane);            
         }
         testEntityAdded = true;
     });
@@ -94,6 +112,8 @@
 <body>
 <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true'>
     <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
+    <a-entity geometry="primitive: plane"
+          material="shader: ocean; color: blue; wave-height: 10"></a-entity>
 </a-scene>
 </body>
 </html>
