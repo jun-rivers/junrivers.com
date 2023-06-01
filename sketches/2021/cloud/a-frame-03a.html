@@ -28,6 +28,7 @@
                 latitude: e.detail.position.latitude + 0.001,
                 longitude: e.detail.position.longitude
             });
+            document.querySelector("a-scene").appendChild(entityN);
             const entityS = document.createElement("a-box");
             entityS.setAttribute("scale", {
                 x: 20, 
