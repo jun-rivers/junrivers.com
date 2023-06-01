@@ -36,8 +36,9 @@
     const urlParams = new URLSearchParams(queryString);
     const lat = urlParams.get('lat')
     const lng = urlParams.get('lng')
-    const yOffset = urlParams.get('y')
+    const yOffset = urlParams.get('y') || 10
     const material = urlParams.get('m')
+    const scale = urlParams.get('s') || 20
     const mURL = "https://storage.googleapis.com/artifacts-cms/" + material;
 
     const el = document.querySelector("[gps-new-camera]");
@@ -65,9 +66,9 @@
 
             const video = document.createElement("a-video");
             video.setAttribute("scale", {
-                x: 20, 
-                y: 20,
-                z: 20
+                x: s, 
+                y: s,
+                z: s
             });
             video.setAttribute("position", {
                 x: 0, 
@@ -75,6 +76,7 @@
                 z: 0
             });
             video.setAttribute('src', mURL );
+            video.setAttribute('material', { blending: 'multiply' } );
             video.setAttribute('gps-new-entity-place', {
                 latitude: lat,
                 longitude: lng
