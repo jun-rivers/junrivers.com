@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>AR.js A-Frame Location-based</title>
+
+<style>
+    .arjs-loader {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .arjs-loader div {
+      text-align: center;
+      font-size: 1.25em;
+      color: white;
+    }
+</style>
+<script type="text/javascript">
+  window.onload = () => {
+    let testEntityAdded = false;
+
+    // Query String Handling
+    const queryString = window.location.search;
+    console.log(queryString);
+    const urlParams = new URLSearchParams(queryString);
+    const lat = urlParams.get('lat')
+    const lng = urlParams.get('lng')
+    const yOffset = urlParams.get('y')
+    const model = urlParams.get('m')
+    const mURL = "https://storage.googleapis.com/artifacts-cms/" + model;
+
+    const el = document.querySelector("[gps-new-camera]");
+
+    el.addEventListener("gps-camera-update-position", e => {
+        if(!testEntityAdded) {
+            alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20, 
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute("position", {
+                x: 0, 
+                y: yOffset,
+                z: 0
+            });
+            entity.setAttribute('material', { color: 'blue' } );
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: lat,
+                longitude: lng
+            });
+            document.querySelector("a-scene").appendChild(entity);
+        }
+        testEntityAdded = true;
+    });
+};
+</script>
+<script type="text/javascript" src="https://aframe.io/releases/1.3.0/aframe.min.js" ></script>
+<script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/three.js/build/ar-threex-location-only.js" ></script>
+<script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+</head>
+<body>
+<a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true'>
+    <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
+</a-scene>
+</body>
+</html>
