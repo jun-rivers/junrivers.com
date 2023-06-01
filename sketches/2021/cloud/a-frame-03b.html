@@ -66,45 +66,92 @@
             // });
             // scene.appendChild(entity);
 
-            const video = document.createElement("a-video");
-            video.setAttribute("scale", {
+            const artifactFree = document.querySelector("#artifact-free");
+            artifactFree.setAttribute('src', `${mURL}-free.mp4`);
+            const artifactFound = document.querySelector("#artifact-found");
+            artifactFound.setAttribute('src', `${mURL}-found.mp4`);
+
+            const artifact = document.querySelector("a-video");
+            artifact.setAttribute("scale", {
                 x: scale, 
                 y: scale,
                 z: scale
             });
-            video.setAttribute("position", {
+            artifact.setAttribute("position", {
                 x: 0, 
                 y: yOffset,
                 z: 0
             });
-            video.setAttribute('src', mURL );
-            video.setAttribute('transparent', 'true' );
-            // video.setAttribute('opacity', 0.5 );
-            video.setAttribute('material', "shader: flat; blending: multiply;" );
-            video.setAttribute('gps-new-entity-place', {
+            artifact.setAttribute('src', '#artifact-free' );
+            artifact.setAttribute('transparent', 'true' );
+            artifact.setAttribute('transparent', 'true' );
+            // artifact.setAttribute('opacity', 0.5 );
+            artifact.setAttribute('material', "shader: flat; blending: multiply;" );
+            artifact.setAttribute('gps-new-entity-place', {
                 latitude: lat,
                 longitude: lng
             });
-            scene.appendChild(video);
+            // scene.appendChild(artifact);
+
+            const box = document.querySelector("#box");
+            box.setAttribute("scale", {
+                x: scale, 
+                y: scale,
+                z: scale
+            });
+            box.setAttribute("position", {
+                x: 0, 
+                y: yOffset,
+                z: 0
+            });
         }
         testEntityAdded = true;
-    });
-};
+        artifact.addEventListener('click', function () {
+            // this.setAttribute('material', 'color', 'red');
+            console.log('Found!');
+            this.setAttribute('src', '#artifact-found' );
+            setTimeout(() => { 
+                if (window.opener) {
+                    window.opener.sendARMessage("done");
+                }
+            }, 2000);
+        });
+      });
+    };
 </script>
 <script type="text/javascript" src="https://aframe.io/releases/1.3.0/aframe.min.js" ></script>
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/three.js/build/ar-threex-location-only.js" ></script>
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
 </head>
 <body>
-<a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true'>
-    <!-- <a-assets>
-        <video id="videoMushroom" preload="auto"
-               src="https://storage.googleapis.com/artifacts-cms/ezgif_com_gif_maker_5c0fe6eb61/ezgif_com_gif_maker_5c0fe6eb61.mp4"
-               width="90" height="90" autoplay loop="true"
-               muted webkit-playsinline playsinline 
+<a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: true' renderer='antialias: true; alpha: true' cursor="rayOrigin: mouse">
+    <a-assets>
+        <video id="artifact-free" preload="auto"
+               autoplay loop="true"
                crossOrigin="anonymous"></video>
-    </a-assets> -->
-    <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
+        <video id="artifact-found" preload="auto"
+               autoplay loop="true"
+               crossOrigin="anonymous"></video>
+    </a-assets>
+    <!-- <a-camera gps-new-camera='gpsMinDistance: 5' look-controls>
+      <a-entity cursor="fuse: true; fuseTimeout: 500"
+                position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                material="color: black; shader: flat">
+      </a-entity>
+    </a-camera> -->
+
+    <a-camera gps-new-camera='gpsMinDistance: 5'>
+      <a-entity cursor="fuse: true; maxDistance: 30; timeout: 500"
+                position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                material="color: white; shader: flat">
+      </a-entity>
+    </a-camera>
+
+    <a-entity id="box" geometry="primitive: box" material="color: blue"></a-entity>
+
+    <a-video id='artifact'></a-video>
 </a-scene>
 </body>
 </html>
