@@ -40,45 +40,76 @@
         left: 10vw;
         opacity: 0.5;
       }
-      .circularVisionProgress {
-        width: 80vw;
-        height: 80vw;
-        border-radius: 40vw;
-        background: none;
-        border: 4px solid white;
-        top: calc(50vh - 40vw);
-        left: 10vw;
-        opacity: 1;
+
+      canvas {
+          display: block;
+          position:absolute;
+          top:0;
+          left:0;
+      }
+      span {
+          color:#555;
+          display:block;
+          line-height:220px;
+          text-align:center;
+          width:220px;
+          font-family:sans-serif;
+          font-size:40px;
+          font-weight:100;
+          margin-left:5px;
       }
 
-      .circularVision .circularVisionProgress .mask,
-      .circularVision .circularVisionProgress .fill {
-        width: 150px;
-        height: 150px;
-        position: absolute;
-        border-radius: 50%;
+      input {
+          width: 200px;
       }
 
-      .mask .fill {
-        clip: rect(0px, 75px, 150px, 0px);
-        background-color: #227ded;
-      }
-
-      .mask.full,
-      .circle .fill {
-        animation: fill ease-in-out 3s;
-        transform: rotate(135deg);
-      }
-
-      @keyframes fill {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(135deg);
-        }
+      span {
+        
       }
     </style>
+    <script>
+      var el = document.getElementById('graph'); // get canvas
+
+      var options = {
+          percent:  el.getAttribute('data-percent') || 25,
+          size: el.getAttribute('data-size') || 220,
+          lineWidth: el.getAttribute('data-line') || 15,
+          rotate: el.getAttribute('data-rotate') || 0
+      }
+
+      var canvas = document.createElement('canvas');
+      var span = document.createElement('span');
+      span.textContent = options.percent + '%';
+          
+      if (typeof(G_vmlCanvasManager) !== 'undefined') {
+          G_vmlCanvasManager.initElement(canvas);
+      }
+
+      var ctx = canvas.getContext('2d');
+      canvas.width = canvas.height = options.size;
+
+      el.appendChild(span);
+      el.appendChild(canvas);
+
+      ctx.translate(options.size / 2, options.size / 2); // change center
+      ctx.rotate((-1 / 2 + options.rotate / 180) * Math.PI); // rotate -90 deg
+
+      //imd = ctx.getImageData(0, 0, 240, 240);
+      var radius = (options.size - options.lineWidth) / 2;
+
+      var drawCircle = function(color, lineWidth, percent) {
+          percent = Math.min(Math.max(0, percent), 1);
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, Math.PI * 2 * percent, false);
+          ctx.strokeStyle = color;
+              ctx.lineCap = 'round'; // butt, round or square
+          ctx.lineWidth = lineWidth
+          ctx.stroke();
+      };
+
+      drawCircle('#efefef', options.lineWidth, 100 / 100);
+      drawCircle('#555555', options.lineWidth, options.percent / 100);
+    </script>
     <script>
       var observed, observationFrames
       observationFrames = 0;
@@ -101,7 +132,8 @@
           }
           if (observationFrames > 500) {
             console.log('observation done.');
-            window.close();
+            // window.close();
+            window.opener.sendARMessage("done");
           }
         }
         setInterval(observationCheck, 1);
@@ -119,17 +151,11 @@
 
   <body style="margin : 0px; overflow: hidden;">
     <!-- minimal loader shown until image descriptors are loaded. Loading may take a while according to the device computational power -->
-    <div class="arjs-loader">
+    <!-- <div class="arjs-loader">
       <div>Loading, please wait...</div>
-    </div>
+    </div> -->
 
-    <div class="circularVision mask">
-      <div class="circularVisionProgress">
-        <div class="mask half">
-            <div class="fill"></div>
-        </div>
-      </div>
-    </div>
+    <div class="chart circularVision" id="graph" data-percent="90"></div>
 
     <!-- a-frame scene -->
     <a-scene
