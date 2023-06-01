@@ -45,7 +45,7 @@
 
     el.addEventListener("gps-camera-update-position", e => {
         if(!testEntityAdded) {
-            alert(`v03b-blending: Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            alert(`v03b-blending materials: Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
                 x: 20, 
