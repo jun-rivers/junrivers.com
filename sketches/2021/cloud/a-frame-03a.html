@@ -7,7 +7,7 @@
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/three.js/build/ar-threex-location-only.js" ></script>
 
 <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
-<script><script type="text/javascript">
+<script type="text/javascript">
   window.onload = () => {
     let testEntityAdded = false;
 
@@ -40,13 +40,13 @@
     <a-camera gps-new-camera='gpsMinDistance: 5'></a-camera>
     <a-cylinder material='color: red' gps-new-entity-place="latitude: 35.143; longitude: 139.078" scale="10 10 10"></a-cylinder>
     <a-box material='color: green' gps-new-entity-place="latitude: 35.144; longitude: 139.079" scale="30 30 30"></a-box>
-    <!-- <a-text
+    <a-text
       value="Hey."
       look-at="[gps-new-camera]"
       scale="20 20 20"
       gps-entity-place="latitude: 35.145; longitude: 139.080;"
       position="0 20 0"
-    ></a-text> -->
+    ></a-text>
 </a-scene>
 </body>
 </html>
