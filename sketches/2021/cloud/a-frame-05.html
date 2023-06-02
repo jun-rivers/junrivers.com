@@ -25,6 +25,24 @@
       font-size: 1.25em;
       color: white;
     }
+
+    #done-btn {
+      position: absolute;
+      bottom: 10vh;
+      left: 10vw;
+      width: 80vw;
+      height: 100px;
+      text-align: center;
+      font-size: 1.25em;
+      color: white;
+      background: none;
+      border: 1px solid white;
+      border-radius: 50px;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
   <script>
     // Query String Handling
@@ -33,64 +51,64 @@
     const urlParams = new URLSearchParams(queryString);
     const pattern = urlParams.get('p')
     const model = urlParams.get('m')
-    const scale = urlParams.get('s')
-    const pURL = "data/pattern-exp-medium-avatar.patt"//"https://storage.googleapis.com/artifacts-cms/" + pattern;
-    const mURL = "https://storage.googleapis.com/artifacts-cms/" + model;
-    // Observation Logic
+    const pURL = "data/" + pattern;
+    const mURL = "data/" + model;
+    const scale = urlParams.get('s') || 1 //scale
+    const height = urlParams.get('h') || 0 //height
+    const text = urlParams.get('t') || ""; //text
+
     let observationFrames = 0;
     let observing = false;
-    let observationTarget = 100;
-    let progress = 0;
-    // window.addEventListener("markerFound", (event) => {
-    //   console.log('markerFound');
-    //   observing = true;
-    // });
-    // window.addEventListener("arjs-nft-loaded", (event) => {
-    //   console.log('arjs-nft-loaded');
-    // });
-
-    // window.addEventListener("markerLost", (event) => {
-    //   console.log('markerLost');
-    //   console.log(observationFrames);
-    //   observing = false;
-    // });
 
     window.onload = function () {
-    //   function observationCheck() {
-    //     if (observing) {
-    //       observationFrames++;
-    //       progress = (observationFrames / observationTarget) * 100;
-    //       counter.textContent = progress + '%';
-    //       drawCircle('#555555', options.lineWidth, progress / 100);
-    //     }
-    //     if (observationFrames > 100) {
-    //       console.log('observation done.');
-    //       // window.close();
-    //       if (window.opener) {
-    //         window.opener.sendARMessage("done");
-    //       }
-    //       clearInterval(observationFrameByFrame);
-    //     }
 
-    //   }
-    //   const observationFrameByFrame = setInterval(observationCheck, 1);
+      const dBtn = document.getElementById('done-btn');
 
       const aScene = document.getElementById('aScene');
+      const aText = document.querySelector('a-text');
       const aEntity = document.querySelector('a-entity');
       const aCamera = document.querySelector('a-marker-camera');
+      aText.setAttribute('value', text);
       aEntity.setAttribute('gltf-model', mURL);
       aEntity.setAttribute('rotation', '0 0 0');
-      // aCamera.setAttribute('url', pURL);
-    }
+      aEntity.setAttribute("scale", {
+                x: scale, 
+                y: scale,
+                z: scale
+            });
+      aEntity.setAttribute("position", {
+                x: 0, 
+                y: height,
+                z: 0
+            });
+      aCamera.setAttribute('url', pURL);
 
-       // Tasks:
-       // loading consistency
-       // O take in variables from urlparam: modelUrl, game id, step id, patternUrl, scaleInteger, observationFrames;
-       // O circular progress bar
-       // O send 'done' message to parent;
-       // O Progress game after sending back
-       // Location example;
-       // Marker example;
+      // window.addEventListener("markerFound", (event) => {
+      //   console.log('markerFound');
+      //   observing = true;
+      // });
+      // window.addEventListener("markerLost", (event) => {
+      //   console.log('markerLost');
+      //   console.log(observationFrames);
+      //   observing = false;
+      // });
+
+      // function observationCheck() {
+      //   if (observing) {
+      //     observationFrames++;
+      //   }
+      //   if (observationFrames > 10) {
+      //     console.log('observation enough.');
+      //     dBtn.classList.remove("hidden");
+      //     clearInterval(observationFrameByFrame);
+      //   }
+      // }
+      // const observationFrameByFrame = setInterval(observationCheck, 1);
+
+      dBtn.addEventListener('click', (event) => {
+        window.opener.sendARMessage("done");
+      })
+    }
 
   </script>
   <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.4.2/dist/aframe-master.min.js"></script>
@@ -105,11 +123,13 @@
     <a-assets>
       <!-- <a-asset-item id="bird" src="https://storage.googleapis.com/artifacts-cms/Flamingo.glb"></a-asset-item> -->
     </a-assets>
-    <a-entity scale="0.01 0.01 0.01" position="0 1 0"></a-entity>
-    <a-text value="Flamingo" align="center" position="0 0.5 0.5"></a-text>
+    <a-entity></a-entity>
+    <a-text align="center" position="0 0.5 0.5"></a-text>
     <!-- <a-box position='0 0.5 0' material='opacity: 0.8;'></a-box> -->
     <!-- <a-marker-camera preset='custom' type='pattern' url='data/pattern-exp-medium-avatar.patt'></a-marker-camera> -->
-    <a-marker-camera preset='custom' type='pattern' url='https://junrivers.com/sketches/2021/cloud/data/pattern-exp-medium-avatar.patt'></a-marker-camera>
+    <a-marker-camera preset='custom' type='pattern'></a-marker-camera>
+    <!-- <a-marker-camera preset='hiro'></a-marker-camera> -->
   </a-scene>
+  <Button id='done-btn'>Done</Button>
 </body>
 </html>
