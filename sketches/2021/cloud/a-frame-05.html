@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Marker based tracking AR.js demo</title>
+
+  <!-- style for the loader -->
+  <style>
+    .arjs-loader {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .arjs-loader div {
+      text-align: center;
+      font-size: 1.25em;
+      color: white;
+    }
+  </style>
+  <script>
+    // Query String Handling
+    const queryString = window.location.search;
+    console.log(queryString);
+    const urlParams = new URLSearchParams(queryString);
+    const pattern = urlParams.get('p')
+    const model = urlParams.get('m')
+    const scale = urlParams.get('s')
+    const pURL = "data/pattern-exp-medium-avatar.patt"//"https://storage.googleapis.com/artifacts-cms/" + pattern;
+    const mURL = "https://storage.googleapis.com/artifacts-cms/" + model;
+    // Observation Logic
+    let observationFrames = 0;
+    let observing = false;
+    let observationTarget = 100;
+    let progress = 0;
+    // window.addEventListener("markerFound", (event) => {
+    //   console.log('markerFound');
+    //   observing = true;
+    // });
+    // window.addEventListener("arjs-nft-loaded", (event) => {
+    //   console.log('arjs-nft-loaded');
+    // });
+
+    // window.addEventListener("markerLost", (event) => {
+    //   console.log('markerLost');
+    //   console.log(observationFrames);
+    //   observing = false;
+    // });
+
+    window.onload = function () {
+    //   function observationCheck() {
+    //     if (observing) {
+    //       observationFrames++;
+    //       progress = (observationFrames / observationTarget) * 100;
+    //       counter.textContent = progress + '%';
+    //       drawCircle('#555555', options.lineWidth, progress / 100);
+    //     }
+    //     if (observationFrames > 100) {
+    //       console.log('observation done.');
+    //       // window.close();
+    //       if (window.opener) {
+    //         window.opener.sendARMessage("done");
+    //       }
+    //       clearInterval(observationFrameByFrame);
+    //     }
+
+    //   }
+    //   const observationFrameByFrame = setInterval(observationCheck, 1);
+
+      const aScene = document.getElementById('aScene');
+      const aEntity = document.querySelector('a-entity');
+      const aCamera = document.querySelector('a-marker-camera');
+      aEntity.setAttribute('gltf-model', mURL);
+      aEntity.setAttribute('rotation', '0 0 0');
+      // aCamera.setAttribute('url', pURL);
+    }
+
+       // Tasks:
+       // loading consistency
+       // O take in variables from urlparam: modelUrl, game id, step id, patternUrl, scaleInteger, observationFrames;
+       // O circular progress bar
+       // O send 'done' message to parent;
+       // O Progress game after sending back
+       // Location example;
+       // Marker example;
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.4.2/dist/aframe-master.min.js"></script>
+  <script type="text/javascript" src="https://www.unpkg.com/@ar-js-org/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
+</head>
+<body style="margin : 0px; overflow: hidden;">
+  <!-- a-frame scene -->
+  <a-scene id="aScene" arjs='trackingMethod: best; sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'></a-scene>
+    <!-- create your content here. just a box for now -->
+    <a-assets>
+      <!-- <a-asset-item id="bird" src="https://storage.googleapis.com/artifacts-cms/Flamingo.glb"></a-asset-item> -->
+    </a-assets>
+    <a-entity scale="0.01 0.01 0.01" position="0 1 0"></a-entity>
+    <a-text value="Flamingo" align="center" position="0 0.5 0.5"></a-text>
+    <!-- <a-box position='0 0.5 0' material='opacity: 0.8;'></a-box> -->
+    <a-marker-camera preset='custom' type='pattern' url='data/pattern-exp-medium-avatar.patt'></a-marker-camera>
+  </a-scene>
+</body>
+</html>
