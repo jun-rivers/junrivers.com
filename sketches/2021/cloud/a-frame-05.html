@@ -38,10 +38,12 @@
       background: none;
       border: 1px solid white;
       border-radius: 50px;
+      opacity: 1;
+      transition: opacity 2s;  
     }
 
     .hidden {
-      display: none;
+      opacity: 0;
     }
   </style>
   <script>
@@ -104,6 +106,10 @@
       //   }
       // }
       // const observationFrameByFrame = setInterval(observationCheck, 1);
+      function fadeInBtn() {
+          dBtn.classList.remove("hidden");
+      }
+      const fadeInBtnTimer = setTimeout(fadeInBtn, 2000);
 
       dBtn.addEventListener('click', (event) => {
         window.opener.sendARMessage("done");
