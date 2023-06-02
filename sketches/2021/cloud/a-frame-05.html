@@ -98,7 +98,9 @@
 </head>
 <body style="margin : 0px; overflow: hidden;">
   <!-- a-frame scene -->
-  <a-scene id="aScene" arjs='trackingMethod: best; sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'></a-scene>
+  <a-scene id="aScene" debug="true" emitevents="true" ; vr-mode-ui="enabled: false;"
+    renderer="logarithmicDepthBuffer: true;" embedded
+    arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;">
     <!-- create your content here. just a box for now -->
     <a-assets>
       <!-- <a-asset-item id="bird" src="https://storage.googleapis.com/artifacts-cms/Flamingo.glb"></a-asset-item> -->
@@ -106,7 +108,8 @@
     <a-entity scale="0.01 0.01 0.01" position="0 1 0"></a-entity>
     <a-text value="Flamingo" align="center" position="0 0.5 0.5"></a-text>
     <!-- <a-box position='0 0.5 0' material='opacity: 0.8;'></a-box> -->
-    <a-marker-camera preset='custom' type='pattern' url='data/pattern-exp-medium-avatar.patt'></a-marker-camera>
+    <!-- <a-marker-camera preset='custom' type='pattern' url='data/pattern-exp-medium-avatar.patt'></a-marker-camera> -->
+    <a-marker-camera preset='custom' type='pattern' url='https://junrivers.com/sketches/2021/cloud/data/pattern-exp-medium-avatar.patt'></a-marker-camera>
   </a-scene>
 </body>
 </html>
