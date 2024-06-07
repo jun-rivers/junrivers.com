@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>My Time</title>
+<style>
+  @import url('https://fonts.googleapis.com/css?family=Inconsolata|Montserrat');
+
+
+  body {
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+  }
+
+  h1,h2,h3,h4,h5 {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  h2, h3 {
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    line-height: 30px;
+  }
+
+  .slice {
+    cursor: pointer;
+  }
+
+  .slice .main-arc {
+    stroke: #fff;
+    stroke-width: 1px;
+  }
+
+  .slice .hidden-arc {
+    fill: none;
+  }
+
+  .slice text {
+    pointer-events: none;
+    dominant-baseline: middle;
+    text-anchor: middle;
+  }
+
+  #sidebar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 50%;
+    text-align: left;
+    line-height: 18px;
+    color: #666;
+    z-index: -1;
+  }
+
+  #title {
+    font-size: 2.5em;
+  }
+
+  #detail {
+    font-size: 1em;
+  }
+</style>
+</head>
+<body>
+<script type="text/javascript" src="js/base.js"></script>
+<script type="text/javascript" src="js/DataStructures.Tree.customized.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" src="//d3js.org/d3-scale-chromatic.v0.3.min.js"></script>
+<script type="text/javascript" src="js/sundial.js"></script>
+
+  <div id='sidebar'>
+    <div id='info' style='visibility: hidden;'>
+      <h3 id='title'></h3>
+      <p id='detail'></p>
+    </div>
+  </div>
+</body>
+</html>

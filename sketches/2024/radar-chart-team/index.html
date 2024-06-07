@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<title>The X.JP Team | Radar Chart</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+<link rel="stylesheet" href="src/radar-chart.css">
+<head>
+  <style>
+    body {
+      padding: 20px;
+      text-align: center;
+    }
+    .radar-chart .area {
+      fill-opacity: 0.3;
+    }
+    .radar-chart.focus .area {
+      fill-opacity: 0.3;
+    }
+    .radar-chart.focus .area.focused {
+      fill-opacity: 0.9;
+    }
+    .area.germany, .germany .circle {
+      fill: #FFD700;
+      stroke: none;
+    }
+    .area.argentina, .argentina .circle {
+      fill: #ADD8E6;
+      stroke: none;
+    }
+  </style>
+
+  <script type="text/javascript" src="https://d3js.org/d3.v3.js"></script>
+  <script type="text/javascript" src="src/radar-chart.js"></script>
+
+  <script type="text/javascript">
+    RadarChart.defaultConfig.color = function() {};
+    RadarChart.defaultConfig.radius = 3;
+  </script>
+
+  <script type="text/javascript">
+    var data = [
+      {
+        className: 'Haruko',
+        axes: [
+          {axis: "experience", value: 10}, 
+          {axis: "IT literacy", value: 2}, 
+          {axis: "productivity", value: 7},  
+          {axis: "Communications", value: 5},  
+          {axis: "Proactivity", value: 7}
+        ]
+      },
+      {
+        className: 'Wynne',
+        axes: [
+          {axis: "experience", value: 2}, 
+          {axis: "IT literacy", value: 8}, 
+          {axis: "productivity", value: 7},  
+          {axis: "Communications", value: 6},  
+          {axis: "Proactivity", value: 3}
+        ]
+      },
+      {
+        className: 'Rajat', // optional can be used for styling
+        axes: [
+          {axis: "experience", value: 5}, 
+          {axis: "IT literacy", value: 4}, 
+          {axis: "productivity", value: 6},  
+          {axis: "Communications", value: 5},  
+          {axis: "Proactivity", value: 3}
+        ]
+      },
+      {
+        className: 'Mayumi',
+        axes: [
+          {axis: "experience", value: 7}, 
+          {axis: "IT literacy", value: 6}, 
+          {axis: "productivity", value: 7},  
+          {axis: "Communications", value: 9},  
+          {axis: "Proactivity", value: 8}
+        ]
+      },
+      {
+        className: 'Azumi',
+        axes: [
+          {axis: "experience", value: 4}, 
+          {axis: "IT literacy", value: 6}, 
+          {axis: "productivity", value: 7},  
+          {axis: "Communications", value: 7},  
+          {axis: "Proactivity", value: 8}
+        ]
+      }
+    ];
+    // function randomDataset() {
+    //   return data.map(function(d) {
+    //     return {
+    //       className: d.className,
+    //       axes: d.axes.map(function(axis) {
+    //         return {axis: axis.axis, value: Math.ceil(Math.random() * 10)};
+    //       })
+    //     };
+    //   });
+    // }
+  </script>
+</head>
+<body>
+  <h1>The X Team</h1>
+  <h2>A Radar Chart Visualization</h2>
+
+  <script type="text/javascript">
+  var chart = RadarChart.chart();
+  var cfg = chart.config(); // retrieve default config
+  var svg = d3.select('body').append('svg')
+    .attr('width', cfg.w)
+    .attr('height', cfg.h + cfg.h / 4);
+  svg.append('g').classed('single', 1).datum(data).call(chart);
+
+  // many radars
+  // chart.config({w: cfg.w / 4, h: cfg.h / 4, axisText: false, levels: 0, circles: false});
+  // cfg = chart.config();
+  // function render() {
+  //   var game = svg.selectAll('g.game').data(
+  //     [
+  //       randomDataset(),
+  //       randomDataset(),
+  //       randomDataset(),
+  //       randomDataset()
+  //     ]
+  //   );
+  //   game.enter().append('g').classed('game', 1);
+  //   game
+  //     .attr('transform', function(d, i) { return 'translate('+(i * cfg.w)+','+ (cfg.h * 4) +')'; })
+  //     .call(chart);
+
+  //   setTimeout(render, 1000);
+  // }
+  // render();
+  </script>
+
+</body>
+</html>
