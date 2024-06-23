@@ -1,4 +1,5 @@
 
+//var myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVL1_ah4UARJw_tKyQ5TiT-kx_arrgpTQiMpZHoar7WKpCY-HDeVJHqN0aRuUYsEtzsJOIj8vHfV65/pub?output=csv";
 var myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVL1_ah4UARJw_tKyQ5TiT-kx_arrgpTQiMpZHoar7WKpCY-HDeVJHqN0aRuUYsEtzsJOIj8vHfV65/pub?output=csv";
 
 const width = window.innerWidth,
@@ -16,12 +17,12 @@ const y = d3.scaleSqrt()
 
 // const color = d3.scaleOrdinal(d3.schemeCategory20c);
 const colors = {
-    "LIFE": "#323232",
-    "TIME": "#595959",
-    "J": "#F2ECE4",
-    "JIA": "#EFD7D0",
-    "SPACE": "#828282",
-    "ESRI": "#005e95"
+    "EXP.OS": "#323232",
+    "RESOURCES": "#595959",
+    "RM": "#F2ECE4",
+    "BX.": "#EFD7D0",
+    "EXP.J": "#828282",
+    "EXP.L": "#005e95"
 };
 
 const partition = d3.partition();
@@ -141,7 +142,7 @@ d3.csv(myCsv, function(data){
         .style('fill', function(d) { 
           var w = d.data.workcode;
           var end;
-          if (!w) {return colors['LIFE'];}
+          if (!w) {return colors['OS'];}
           if (w.indexOf("-") > 0) {
             end = w.indexOf("-");
           } else {
@@ -220,13 +221,13 @@ function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function mouseover(d) {
   
-  // console.log(d);
+  console.log(d);
 
   var title = d.data.name;
   var detail = d.data.workcode + '<br/>'
-          + '<br/> percentage of ' + d.data.parentcode + ': ' + d.data.percentage + '%'
-          + '<br/> hours/week: <h3>' + formatNumber(d.value) + '</h3>'
-          + '<br/> average hours/day: <h3>' + d.data['avg-hours-per-day'] + '</h3><br/>'
+          + '<br/> percentage of ' + d.data.parentcode + ': <h3>' + d.data.percentage + '%</h3>'
+          + '<br/> annual budget (K HKD): <h3>' + d.data['annual-budget'] + '</h3>'
+          + '<br/> monthly budget (K HKD): <h3>' + d.data['monthly-budget'] + '</h3><br/>'
           + '<br/> ' + d.data.notes; 
 
   d3.select('#title')

@@ -110,8 +110,8 @@ DataStructures.Tree = Base.extend({
                             "workcode" : node.id,
                             "parentcode" : node.parentId,
                             "percentage" : node.percentage,
-                            "avg-hours-per-day" : node.avgHoursPerDay,
-                            "total-hours-per-week" : node.ttlHoursPerWeek,
+                            "monthly-budget" : node.monthlyBudget,
+                            "annual-budget" : node.annualBudget,
                             "notes" : node.notes,
                             //CUSTOM COLUMNS DONE
                             "children" : children
