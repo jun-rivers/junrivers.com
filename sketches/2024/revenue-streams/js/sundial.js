@@ -226,8 +226,8 @@ function mouseover(d) {
   var title = d.data.name;
   var detail = d.data.workcode + '<br/>'
           + '<br/> percentage of ' + d.data.parentcode + ': <h3>' + d.data.percentage + '%</h3>'
-          + '<br/> annual budget (K HKD): <h3>' + d.data['annual-budget'] + '</h3>'
-          + '<br/> monthly budget (K HKD): <h3>' + d.data['monthly-budget'] + '</h3><br/>'
+          + '<br/> annual target (K HKD): <h3>' + d.data['annual-target'] + '</h3>'
+          + '<br/> monthly target (K HKD): <h3>' + d.data['monthly-target'] + '</h3><br/>'
           + '<br/> ' + d.data.notes; 
 
   d3.select('#title')

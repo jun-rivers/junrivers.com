@@ -110,8 +110,8 @@ DataStructures.Tree = Base.extend({
                             "workcode" : node.id,
                             "parentcode" : node.parentId,
                             "percentage" : node.percentage,
-                            "monthly-budget" : node.monthlyBudget,
-                            "annual-budget" : node.annualBudget,
+                            "monthly-target" : node.monthlyTarget,
+                            "annual-target" : node.annualTarget,
                             "notes" : node.notes,
                             //CUSTOM COLUMNS DONE
                             "children" : children
