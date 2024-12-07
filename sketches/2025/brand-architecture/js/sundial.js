@@ -19,8 +19,8 @@ const y = d3.scaleSqrt()
 const colors = {
     "idea": "#9E9EFE",
     "developing": "#F2ACA4",
-    "operating": "#595959",
-    "mature": "#323232",
+    "operating": "#323232",
+    "mature": "#66AA66",
 };
 
 const partition = d3.partition();
