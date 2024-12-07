@@ -89,7 +89,7 @@ d3.csv(myCsv, function(data){
         });
 
     newSlice.append('title')
-        .text(d => d.data.id + ' / ' + d.data.weight + '%');
+        .text(d => d.data.name + ' | ' + d.data.percentage + '% of ' + d.data.parentcode);
 
 
 
