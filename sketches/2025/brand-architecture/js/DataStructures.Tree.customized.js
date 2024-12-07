@@ -126,6 +126,11 @@ DataStructures.Tree = Base.extend({
 
         return decorateNode({
                 "name" :  this.root.name,
+                // "workcode" : this.root.id,
+                "one-liner" : this.root.oneliner,
+                "why-purpose" : this.root.whyPurpose,
+                "how-strategy" : this.root.howStrategy,
+                "what-usp" : this.root.whatUSP,
                 "children" : writeChildNodes(this.root.children)
             }, this.root);
     }

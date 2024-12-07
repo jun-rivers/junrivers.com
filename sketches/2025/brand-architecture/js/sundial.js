@@ -17,7 +17,7 @@ const y = d3.scaleSqrt()
 
 // const color = d3.scaleOrdinal(d3.schemeCategory20c);
 const colors = {
-    "idea": "#DEDEDE",
+    "idea": "#9E9EFE",
     "developing": "#F2ACA4",
     "operating": "#595959",
     "mature": "#323232",
@@ -62,34 +62,6 @@ const svg = d3.select('body').append('svg')
     .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
     .on('click', () => focusOn()); // Reset zoom on canvas click
 
-// var margin = {top: 350, right: 480, bottom: 350, left: 480},
-//     radius = Math.min(margin.top, margin.right, margin.bottom, margin.left) - 10;
-
-// var hue = d3.schemeCategory20;
-
-// var luminance = d3.scaleSqrt()
-//     .domain([0, 2**9])
-//     .clamp(true)
-//     .range([90, 20]);
-
-// var svg = d3.select("body").append("svg")
-//     .attr("width", margin.left + margin.right)
-//     .attr("height", margin.top + margin.bottom)
-//   .append("g")
-//     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-// var partition = d3.partition()
-//     .sort(function(a, b) { return d3.ascending(a.name, b.name); })
-//     .size([2 * Math.PI, radius]);
-
-// var arc = d3.arc()
-//     .startAngle(function(d) { return d.x; })
-//     .endAngle(function(d) { return d.x + d.dx ; })
-//     .padAngle(.01)
-//     .padRadius(radius / 3)
-//     .innerRadius(function(d) { return radius / 3 * d.depth; })
-//     .outerRadius(function(d) { return radius / 3 * (d.depth + 1) - 1; });
-
 d3.csv(myCsv, function(data){
     var tree = DataStructures.Tree.createFromFlatTable(data),
     root = tree.toSimpleObject(function(objectToDecorate, originalNode) {
@@ -107,19 +79,6 @@ d3.csv(myCsv, function(data){
         .data(partition(root).descendants());
 
     slice.exit().remove();
-
-    // // Compute the initial layout on the entire tree to sum sizes.
-    // // Also compute the full name and fill color for each node,
-    // // and stash the children so they can be restored as we descend.
-    // partition
-    //     .value(function(d) { return d.size; })
-    //     .nodes(root)
-    //     .forEach(function(d) {
-    //       d._children = d.children;
-    //       d.sum = d.value;
-    //       d.key = key(d);
-    //       d.fill = fill(d);
-    //     });
 
     // Now redefine the value function to use the previously-computed sum.
     const newSlice = slice.enter()
@@ -220,8 +179,8 @@ function mouseover(d) {
           + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
           + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
           + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
-  var rootdetail = 'ID: ' + d.data.workcode + '<br/>'
-          + '<br/> one-liner: <h3>' + d.data['one-liner'] + '</h3>'
+  var rootdetail = 
+          'one-liner: <h3>' + d.data['one-liner'] + '</h3>'
           + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
           + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
           + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
