@@ -60,7 +60,12 @@ const svg = d3.select('body').append('svg')
     .style('height', '100vh')
     .attr("id", "pie")
     .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
-    .on('click', () => focusOn()); // Reset zoom on canvas click
+    .on('click', function(event) {
+        focusOn(); // Reset to top-level or default view
+        if (window.location.hash) {
+            history.pushState("", document.title, window.location.pathname + window.location.search); // Clear hash
+        }
+    });
 
 d3.csv(myCsv, function(data){
     var tree = DataStructures.Tree.createFromFlatTable(data),
@@ -85,6 +90,8 @@ d3.csv(myCsv, function(data){
         .append('g').attr('class', 'slice')
         .on('click', d => {
             d3.event.stopPropagation();
+            const id = d.data.workcode; // Assuming 'workcode' uniquely identifies a segment
+            history.pushState({ id: id }, "", "#" + id); // Push state with id
             focusOn(d);
         });
 
@@ -131,6 +138,15 @@ d3.csv(myCsv, function(data){
 
     // Add the mouseleave handler to the bounding circle.
     d3.select('#pie').on('mouseleave', mouseleave);
+
+    const id = window.location.hash.substring(1); // Extract the ID from the URL
+    console.log(id);
+    if (id) {
+        const d = findDataById(id); // Implement this function to find data by ID
+        if (d) {
+            focusOn(d);
+        }
+    }
 });
 
 function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
@@ -228,3 +244,20 @@ function mouseleave(d) {
               d3.select(this).on('mouseover', mouseover);
             });
 }
+
+function findDataById(id) {
+    const nodes = svg.selectAll('g.slice').data(); // Get all data bound to slices
+    return nodes.find(d => d.data.workcode === id); // Find the node with the matching workcode
+}
+
+window.addEventListener('popstate', function(event) {
+    if (event.state && event.state.id) {
+        const d = findDataById(event.state.id);
+        if (d) {
+            focusOn(d);
+        }
+    } else {
+        // Fallback focus, e.g., reset to a default view or focus on the top-level
+        focusOn();
+    }
+});
