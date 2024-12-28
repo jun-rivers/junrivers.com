@@ -127,6 +127,8 @@ DataStructures.Tree = Base.extend({
         return decorateNode({
                 "name" :  this.root.name,
                 "workcode" : this.root.id,
+                "percentage" : this.root.percentage,
+                "status" : this.root.status,
                 "one-liner" : this.root.oneliner,
                 "why-purpose" : this.root.whyPurpose,
                 "how-strategy" : this.root.howStrategy,
