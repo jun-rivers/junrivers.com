@@ -11,7 +11,8 @@
             <video id="dynamic-video" autoplay loop muted playsinline></video>
             <!-- <img id="torusTexture" src="mushroom-dance.gif" crossorigin="anonymous"> -->
         </a-assets>
-        <a-marker preset="hiro">
+        <a-marker id="dynamic-marker" preset="custom" type="pattern">
+        <!-- <a-marker preset="hiro"> -->
             <a-entity id="dynamic-group" position="0 0 0" scale="0.2 0.2 0.2">
                 <a-entity id="animator"
                     animation__scalex="property: scale; from: 0.01 0.01 0.01; to: 1 1 0.01; dur: 1000; easing: easeInQuad; startEvents: Found"
@@ -34,6 +35,7 @@
                     video: urlParams.get('video'), // Get video URL parameter
                     scale: parseFloat(urlParams.get('scale')), // Get scale parameter and convert to float
                     opacity: parseFloat(urlParams.get('opacity')) // Get opacity parameter and convert to float
+                    marker = urlParams.get('marker'); // Get marker URL parameter
                 };
             };
 
@@ -60,6 +62,28 @@
                 const planeEntity = document.querySelector('#plane');
                 if (plane.getAttribute('material')) {
                     plane.setAttribute('material', 'opacity', params.opacity);
+                }
+            }
+
+            var markerEl = document.getElementById('dynamic-marker');
+            if (params.marker) {
+            // Based on the marker value, set the pattern file
+                switch (params.marker.toUpperCase()) {
+                    case 'A':
+                        markerEl.setAttribute('url', 'markers/pattern-marker-A.patt');
+                        break;
+                    case 'MO':
+                        markerEl.setAttribute('url', 'markers/pattern-marker-MO.patt');
+                        break;
+                    case 'XO':
+                        markerEl.setAttribute('url', 'markers/pattern-Marker-XO.patt');
+                        break;
+                    case 'AIXO':
+                        markerEl.setAttribute('url', 'markers/pattern-Marker-AIXO.patt');
+                        break;
+                    default:
+                        console.log('No valid marker found. Defaulting to AIXO.');
+                        markerEl.setAttribute('url', 'markers/pattern-marker-AIXO.patt');
                 }
             }
         });
