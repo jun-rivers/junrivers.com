@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animation + Video Textures + Shadows + Depth Portal</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://unpkg.com/aframe-liquid-portal-shader"></script>
+    <script>
+      AFRAME.registerComponent('follow-shadow', {
+        schema: {type: 'selector'},
+        init() {this.el.object3D.renderOrder = -1;},
+        tick() { 
+          if (this.data) {
+            this.el.object3D.position.copy(this.data.object3D.position); 
+            this.el.object3D.position.y+=0.05; // stop z-fighting
+          }
+        }
+      });
+
+      AFRAME.registerComponent('masking', {
+        schema: {
+          enabled: {type: 'boolean', default: true}
+        },
+
+        init: function() {
+          this.el.addEventListener('model-loaded', this.applyColorWrite.bind(this));
+        },
+
+        update: function() {
+          this.applyColorWrite();
+        },
+
+        applyColorWrite: function() {
+          const mesh = this.el.getObject3D('mesh');
+          if (mesh) {
+            mesh.traverse((node) => {
+              if (node.isMesh) {
+                node.material.colorWrite = this.data.enabled;
+              }
+            });
+          }
+        }
+      });
+    </script>
+</head>
+<body style="margin : 0px; overflow: hidden;">
+    <a-scene
+      embedded arjs
+      reflection="directionalLight:a-light[type=directional]"
+      ar-hit-test="target:#objects;"
+      renderer="physicallyCorrectLights:true;colorManagement:true;exposure:1;toneMapping:ACESFilmic;"
+      shadow="type:pcfsoft"
+      xr-mode-ui="XRMode: xr"
+    >
+        <a-entity shadow="cast:true; receive:true"></a-entity>
+        <a-assets>
+            <video id="videoTexture" autoplay loop muted playsinline src="assets/15331525.mp4"></video>
+            <img id="portalTexture" src="assets/portalTexture.jpg" crossorigin="anonymous">
+        </a-assets>
+        <a-marker id="dynamic-marker" preset="custom" type="pattern">
+        <!-- <a-marker preset="custom" type="pattern" url="markers/pattern-markerAA.patt"> -->
+        <!-- <a-marker preset="hiro"> -->
+            <a-entity id="objects" scale="1 1 1" position="0 0 -1" shadow>
+                <a-cylinder 
+                    position="0 -2.2 0" 
+                    scale="1 4 1"
+                    material="src: #portalTexture; side: back; transparent: true; opacity: 1; shader: liquid-portal">
+                </a-cylinder>
+                <a-ring
+                    position="0 0 0"
+                    radius-inner="1" radius-outer="12"
+                    rotation="-90 0 0" 
+                    masking="enabled"
+                    animation__open="property: radius-inner; from: 0; to: 1; dur: 2000; easing: easeInOutQuad; startEvents: Found"
+                    animation__close="property: radius-inner; from: 1; to: 0; dur: 5000; easing: easeInQuad; startEvents: animationcomplete__open">
+                </a-ring>
+                <a-sphere 
+                    position="0 -2 0"
+                    rotation="0 -90 00" 
+                    radius="0.25" 
+                    material="src: #videoTexture; side: double; transparent: true; opacity: 0.9;"
+                    animation__fade="property: material.opacity; from: 0; to: 0.8; dur: 2000; easing: easeInOutQuad; startEvents: Found"
+                    animation__rise="property: position; from: 0 -2 0; to: 0 2 0; dur: 5000; delay: 500; easing: easeInOutQuad; startEvents: Found"
+                    animation__scale="property: scale; from: 0.1 0.1 0.1; to: 2 2 2; dur: 3000; easing: easeInOutQuad; startEvents: Found">
+                </a-sphere>
+            </a-entity>
+            <a-plane position="0 0 0.5" follow-shadow="#objects" material="shader:shadow" shadow="cast:false;" rotation="-90 0 0" width="10" height="10"></a-plane>
+        </a-marker>
+        <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
+        <a-light type="directional" light="castShadow:true;" position="6 6 6" intensity="0.5" shadow-camera-automatic="#objects"></a-light>
+        <a-camera position="0 0.4 0" wasd-controls="acceleration:10;"></a-camera>
+    </a-scene>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var marker = urlParams.get('marker'); // Get 'marker' parameter from URL
+
+        var markerEl = document.getElementById('dynamic-marker');
+        if (marker) {
+            // Based on the marker value, set the pattern file
+            switch (marker.toUpperCase()) {
+                case 'A':
+                    markerEl.setAttribute('url', 'markers/pattern-marker-A.patt');
+                    break;
+                case 'MO':
+                    markerEl.setAttribute('url', 'markers/pattern-marker-MO.patt');
+                    break;
+                case 'XO':
+                    markerEl.setAttribute('url', 'markers/pattern-Marker-XO.patt');
+                    break;
+                case 'AIXO':
+                    markerEl.setAttribute('url', 'markers/pattern-Marker-AIXO.patt');
+                    break;
+                default:
+                    console.log('No valid marker found. Defaulting to AIXO.');
+                    markerEl.setAttribute('url', 'markers/pattern-marker-AIXO.patt');
+            }
+        }
+    });
+
+    var m = document.querySelector("a-marker");
+    var r = document.querySelector("a-ring");
+    var s = document.querySelector("a-sphere");
+    const video = document.querySelector('#videoTexture');
+    var found = false;
+    m.addEventListener("markerFound", (e)=>{
+        if (!found) {
+            console.log("found");
+            // c.emit('Found');
+            r.emit('Found');
+            s.emit('Found');
+            if (video && video.paused) {
+                console.log('play video');
+                video.play().catch(e => console.log('Error playing video:', e));
+            }
+            found = true;
+        }
+    })
+
+    m.addEventListener("markerLost", (e)=>{
+       console.log("lost")
+       // c.setAttribute('scale', '0.1 0.1 0.1'); ; // Reset scale when marker is lost
+       r.setAttribute('radius-inner', '0');
+       s.setAttribute('position', '0 -2 0');
+       s.setAttribute('scale', '0.1 0.1 0.1');
+       found = false
+    })
+    </script>
+</body>
+</html>

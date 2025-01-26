@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transparent Video experiment</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <a-assets>
+            <video id="dynamic-video" autoplay loop muted playsinline></video>
+            <!-- <img id="torusTexture" src="mushroom-dance.gif" crossorigin="anonymous"> -->
+        </a-assets>
+        <a-marker preset="hiro">
+            <a-entity id="dynamic-group" position="0 0 0" scale="0.2 0.2 0.2">
+                <a-entity id="animator"
+                    animation__scalex="property: scale; from: 0.01 0.01 0.01; to: 1 1 0.01; dur: 1000; easing: easeInQuad; startEvents: Found"
+                    animation__scaley="property: scale; from: 1 1 0.01; to: 1 1 1; dur: 1000; easing: easeOutQuad; startEvents: animationcomplete__scalex">
+                    <a-plane id="plane" position="0 1 0" rotation="-90 0 0" scale="16 9 1" material="src: #dynamic-video; opacity: 0.9;"></a-plane>
+                </a-entity>
+            </a-entity>
+        </a-marker>
+        <a-light type="directional" position="0 1.8 3" intensity="0.8"></a-light>
+        <a-light type="ambient" intensity="0.8"></a-light>
+        <a-entity camera></a-entity>
+    </a-scene>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to get URL parameters
+            const getUrlParams = () => {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                return {
+                    video: urlParams.get('video'), // Get video URL parameter
+                    scale: parseFloat(urlParams.get('scale')), // Get scale parameter and convert to float
+                    opacity: parseFloat(urlParams.get('opacity')) // Get opacity parameter and convert to float
+                };
+            };
+
+            const params = getUrlParams();
+
+            // Set the video source if the URL is provided
+            if (params.video) {
+                const videoElement = document.querySelector('#dynamic-video');
+                videoElement.setAttribute('src', params.video);
+            }
+
+            // Set the scale if provided
+            if (params.scale) {
+                const groupEntity = document.querySelector('#dynamic-group');
+                groupEntity.setAttribute('scale', {
+                    x: params.scale,
+                    y: params.scale,
+                    z: params.scale
+                });
+            }
+
+            // Set the scale if provided
+            if (params.opacity) {
+                const planeEntity = document.querySelector('#plane');
+                if (plane.getAttribute('material')) {
+                    plane.setAttribute('material', 'opacity', params.opacity);
+                }
+            }
+        });
+
+        var m = document.querySelector("a-marker");
+        var a = document.querySelector("#animator");
+        const video = document.querySelector('#dynamic-video');
+        var found = false;
+
+        m.addEventListener("markerFound", (e)=>{
+            if (!found) {
+                console.log("found");
+                a.emit('Found');
+                if (video && video.paused) {
+                    console.log('play video');
+                    video.play().catch(e => console.log('Error playing video:', e));
+                }
+                found = true;
+            }
+        })
+
+        m.addEventListener("markerLost", (e)=>{
+           console.log("lost");
+           a.setAttribute('scale', '0.01 0.01 0.01'); ; // Reset scale when marker is lost
+           found = false;
+        })
+    </script>
+</body>
+</html>
