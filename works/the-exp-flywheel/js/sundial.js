@@ -191,15 +191,15 @@ function mouseover(d) {
   var branchdetail = 'ID: ' + d.data.workcode + '<br/>'
           + '<br/> percentage of ' + d.data.parentcode + ': <h3>' + d.data.percentage + '%</h3>'
           + '<br/> status: <h3>' + d.data['status'] + '</h3>'
-          + '<br/> one-liner: <h3>' + d.data['one-liner'] + '</h3>'
-          + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
-          + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
-          + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
+          + '<br/> one-liner: <h3>' + d.data['one-liner'] + '</h3>';
+          // + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
+          // + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
+          // + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
   var rootdetail = 
-          'one-liner: <h3>' + d.data['one-liner'] + '</h3>'
-          + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
-          + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
-          + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
+          'one-liner: <h3>' + d.data['one-liner'] + '</h3>';
+          // + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
+          // + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
+          // + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
 
   d3.select('#title')
       .text(title);
