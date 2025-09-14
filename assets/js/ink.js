@@ -343,7 +343,7 @@ function getScrollPercent() {
 function onScroll() {
 	var position = +getScrollPercent()
 	// console.log('scroll: ' + position );
-	camera.position.set( 0, -position, 400.0 );
+	camera.position.set( 0, position, 400.0 );
 	controls.update();
 }
 function dynamicValuesChanger() {
