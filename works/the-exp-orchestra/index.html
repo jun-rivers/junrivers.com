@@ -192,11 +192,11 @@
 
       // Supervisor: base + arrowhead overlay
       const supG = g.append('g').attr('class','ribbons supervisor');
-      supG.selectAll('path.base').data(ribbonData.filter(d=>d._meta.type==='supervisor')).join('path')
-        .attr('class','ribbon supervisor base')
-        .attr('d', ribbon)
-        .attr('fill', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.2))
-        .attr('stroke', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.95));
+      // supG.selectAll('path.base').data(ribbonData.filter(d=>d._meta.type==='supervisor')).join('path')
+      //   .attr('class','ribbon supervisor base')
+      //   .attr('d', ribbon)
+      //   .attr('fill', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.2))
+      //   .attr('stroke', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.95));
       const ribbonArrow = d3.ribbonArrow().radius(ribbonRadius).headRadius(36).padAngle(0.001);
       supG.selectAll('path.arrow').data(ribbonData.filter(d=>d._meta.type==='supervisor')).join('path')
         .attr('class','ribbon supervisor arrow')
