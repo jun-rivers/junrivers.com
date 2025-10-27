@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EXP.ers Team Matrix</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    :root { --bg:#333333; --panel:#e7e7e7; --ink:#111; --muted:#555; }
+    html, body { height:100%; margin:0; background:var(--bg); color:#fefefe; font-family:Inter,ui-sans-serif,system-ui; }
+    .wrap { height:100%; display:grid; grid-template-rows:auto 1fr; }
+    header { padding:14px 16px 0; }
+    #toggleFilters{ position:absolute; top:64px; right:16px; background:#fefefe; color:#111; border:1px solid #bdbdbd; border-radius:999px; padding:8px 12px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.25); z-index:20; }
+    /* Absolute floating filter panel */
+    .controls { position:absolute; top:108px; left:16px; right:16px; display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; padding:10px; background:rgba(240,240,240,.98); color:#111; border:1px solid #bdbdbd; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.3); z-index:19; transition:opacity .2s ease, transform .2s ease; }
+    .controls.hidden { opacity:0; transform:translateY(-8px); pointer-events:none; }
+    .control { background:var(--panel); border:1px solid #cfcfcf; border-radius:12px; padding:8px 12px; display:inline-flex; gap:8px; align-items:center; }
+    .control input, .control select { background:transparent; border:none; outline:none; color:var(--ink);} .pill{font-size:12px;color:var(--muted)}
+    svg { width:100%; height:100%; display:block; }
+    .group path { fill-opacity:.95; stroke:#1f2430; }
+    .label { font-size:18px; fill:#fefefe; }
+    .ribbon { stroke-opacity:.95; }
+    .ribbon.mentor { stroke-dasharray:3 2; }
+    .muted { opacity:.08; }
+    .legend { font-size:12px; fill:#fefefe; }
+    /* Tooltip */
+    #tip{position:fixed; pointer-events:none; z-index:30; background:#111; color:#fefefe; border:1px solid #333; border-radius:10px; padding:10px 12px; font-size:12px; line-height:1.25; display:none; max-width:280px; box-shadow:0 8px 24px rgba(0,0,0,.35);} #tip .dim{opacity:.75}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 style="margin:0 0 6px 0;">EXP.ers Team Matrix</h1>
+      <p style="margin:0 0 6px 0; color:#d4d4d4;">A flat, dynamic, interdependent organization chart.</p>
+    </header>
+
+    <button id="toggleFilters" title="Show/Hide filters">☰ Filters</button>
+    <!-- Floating controls (absolute, does not shift layout) -->
+    <div class="controls hidden" id="filters">
+      <div class="control"><span class="pill">Search</span><input id="q" placeholder="Find a teammate…" /></div>
+      <div class="control"><span class="pill">Primary Function</span><select id="func"><option value="">All</option></select></div>
+      <div class="control"><span class="pill">Domain</span><select id="domain"><option value="">All</option></select></div>
+      <div class="control"><label style="display:flex;align-items:center;gap:8px;"><input id="showMentor" type="checkbox" checked><span class="pill">Show mentor</span></label></div>
+      <div class="control"><label style="display:flex;align-items:center;gap:8px;"><input id="showSupervisor" type="checkbox" checked><span class="pill">Show supervisor</span></label></div>
+      <div class="control"><span class="pill">Ribbon width</span><input id="bandPct" type="range" min="20" max="100" step="5" value="90"><span id="bandPctVal" class="pill">90%</span></div>
+    </div>
+
+    <svg id="chart"></svg>
+    <div id="tip"></div>
+  </div>
+  <script>
+  (async function(){
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRivua79-fFm9lMLV1lQZkgoeZH4eohvIZRyvSu6Zs5MsiXodIvzgaaMtnDTOw2tF33Il_0ddp8JzYL/pub?gid=0&single=true&output=csv';
+    const raw = await d3.csv(CSV_URL);
+
+    const tip = d3.select('#tip');
+
+    function parseDomains(s){ if(!s) return []; const m=s.match(/EXP\.[A-Za-z]+/g); if(m&&m.length) return m; return s.split(/[;,\n]+|\s{2,}/).map(t=>t.trim()).filter(Boolean); }
+
+    let nodes = raw.map(r => ({
+      id: (r['Name']||'').trim(),
+      name: (r['Name']||'').trim(),
+      supervisor: (r['Supervisor']||'').trim(),
+      mentor: (r['Mentor']||'').trim(),
+      internalTitle: (r['Internal Title']||'').trim(),
+      externalTitle: (r['External Title']||'').trim(),
+      engagement: (r['Engagement']||'').trim(), // NEW
+      functions: (r['Function(s)']||'').split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),
+      domains: parseDomains(r['Domains']||'')
+    })).filter(d=>d.id);
+
+    nodes.forEach(d=> d.primary = d.functions[0] || '—');
+    nodes.sort((a,b)=>(a.primary||'').localeCompare(b.primary||'') || a.name.localeCompare(b.name));
+
+    const idx = new Map(nodes.map((d,i)=>[d.id,i]));
+    const n = nodes.length;
+
+    const svg = d3.select('#chart');
+    let focused = null; // pinned focus index or null
+    const qInput = document.getElementById('q');
+    const funcSelect = document.getElementById('func');
+    const domainSelect = document.getElementById('domain');
+    const showMentor = document.getElementById('showMentor');
+    const showSupervisor = document.getElementById('showSupervisor');
+
+    // live controls
+    let bandPct = 0.9; // 90% of each arc span
+    const bandInput = document.getElementById('bandPct');
+    const bandPctVal = document.getElementById('bandPctVal');
+    if (bandInput) bandInput.addEventListener('input', () => { bandPct = (+bandInput.value)/100; bandPctVal.textContent = `${bandInput.value}%`; layout(); });
+
+    // palette
+    const palette = d3.quantize(d3.interpolateRainbow, n);
+    const nodeColorByIndex = new Map(nodes.map((d,i)=>[i, palette[i]]));
+
+    // filters
+    const primarySet = Array.from(new Set(nodes.map(d=>d.primary))).sort((a,b)=>a.localeCompare(b));
+    primarySet.forEach(f=>{ const o=document.createElement('option'); o.value=f; o.textContent=f; funcSelect.appendChild(o); });
+    const domainSet = Array.from(new Set(nodes.flatMap(d=>d.domains))).sort();
+    domainSet.forEach(f=>{ const o=document.createElement('option'); o.value=f; o.textContent=f; domainSelect.appendChild(o); });
+
+    function layout(){
+      const width = svg.node().clientWidth || window.innerWidth;
+      const height = svg.node().clientHeight || (window.innerHeight - 120);
+      // Make circle smaller to leave room for names
+      const outer = Math.min(width,height)/2 - 110;
+      // Engagement thickness
+      const FULL = 28, THIN = 14; // px thickness
+      const thicknessOf = i => /full\s*-?time/i.test(nodes[i].engagement||'') ? FULL : THIN;
+      const maxThick = FULL;
+      const inner = outer - maxThick;
+      const ribbonRadius = outer - maxThick - 3; // keep ribbons inside all arcs
+
+      svg.attr('viewBox', [-width/2, -height/2, width, height]);
+
+      svg.selectAll('*').remove();
+      // background capture for click-to-clear focus
+      const bg = svg.append('rect').attr('x', -width/2).attr('y', -height/2).attr('width', width).attr('height', height).attr('fill', 'transparent')
+        .on('click', () => { focused = null; tip.style('display','none'); applyFilters(); });
+      const g = svg.append('g');
+
+      // Evenly-spaced groups (equal arc for each person)
+      const pad = 0.02; // radians gap between arcs
+      const arcSpan = (2*Math.PI - n*pad) / n;
+      const groups = nodes.map((p,i)=>({
+        index:i,
+        startAngle: i*(arcSpan+pad),
+        endAngle: i*(arcSpan+pad) + arcSpan
+      }));
+
+      const arc = d3.arc()
+        .innerRadius(d => outer - thicknessOf(d.index))
+        .outerRadius(outer);
+
+      const group = g.append('g').attr('class','groups')
+        .selectAll('g').data(groups).join('g').attr('class','group');
+
+      // person arc + tooltip
+      group.append('path').attr('d', arc)
+        .attr('fill', d => nodeColorByIndex.get(d.index))
+        .on('mouseenter', (evt,d)=>{
+          const p = nodes[d.index];
+          tip.style('display','block')
+             .html(
+              `<div><strong>${p.name}</strong></div>
+               <div class="dim">${[p.internalTitle,p.externalTitle].filter(Boolean).join(' • ')||''}</div>
+               <div><span class="dim">Engagement:</span> ${p.engagement||'—'}</div>
+               <div><span class="dim">Functions:</span> ${p.functions.join(', ')||'—'}</div>
+               <div><span class="dim">Domains:</span> ${p.domains.join(', ')||'—'}</div>`
+             )
+             .style('left', (evt.clientX+12)+"px")
+             .style('top', (evt.clientY+12)+"px");
+        })
+        .on('mousemove', (evt)=>{ tip.style('left',(evt.clientX+12)+"px").style('top',(evt.clientY+12)+"px"); })
+        .on('mouseleave', ()=> tip.style('display','none'));
+
+      // first-name labels only
+      group.append('text')
+        .attr('class','label')
+        .each(d => { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('dy', '0.35em')
+        .attr('transform', d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outer + 10}) ${d.angle > Math.PI ? 'rotate(180)' : ''}`)
+        .attr('text-anchor', d => d.angle > Math.PI ? 'end' : 'start')
+        .text(d => (nodes[d.index].name||'').split(' ')[0]);
+
+      // Links
+      const relations = [];
+      nodes.forEach((p,i)=>{
+        if(p.supervisor && idx.has(p.supervisor)) relations.push({type:'supervisor', source:i, target:idx.get(p.supervisor)});
+        if(p.mentor && idx.has(p.mentor)) relations.push({type:'mentor', source:i, target:idx.get(p.mentor)});
+      });
+
+      const coverage = Math.max(0.2, Math.min(1, bandPct));
+      const makeRibbonDatum = r => {
+        const gs = groups[r.source];
+        const gt = groups[r.target];
+        const sSpan = gs.endAngle - gs.startAngle;
+        const tSpan = gt.endAngle - gt.startAngle;
+        const sInset = (1 - coverage) * 0.5 * sSpan;
+        const tInset = (1 - coverage) * 0.5 * tSpan;
+        return {
+          source: { startAngle: gs.startAngle + sInset, endAngle: gs.endAngle - sInset },
+          target: { startAngle: gt.startAngle + tInset, endAngle: gt.endAngle - tInset },
+          _meta: r
+        };
+      };
+      const ribbonData = relations.map(makeRibbonDatum);
+
+      // Arc→arc ribbons
+      const ribbon = d3.ribbon().radius(ribbonRadius);
+      const colorWithAlpha = (hex, a) => { const c = d3.color(hex); c.opacity = a; return c+''; };
+
+      // Supervisor: base + arrowhead overlay
+      const supG = g.append('g').attr('class','ribbons supervisor');
+      supG.selectAll('path.base').data(ribbonData.filter(d=>d._meta.type==='supervisor')).join('path')
+        .attr('class','ribbon supervisor base')
+        .attr('d', ribbon)
+        .attr('fill', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.2))
+        .attr('stroke', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.95));
+      const ribbonArrow = d3.ribbonArrow().radius(ribbonRadius).headRadius(36).padAngle(0.001);
+      supG.selectAll('path.arrow').data(ribbonData.filter(d=>d._meta.type==='supervisor')).join('path')
+        .attr('class','ribbon supervisor arrow')
+        .attr('d', ribbonArrow)
+        .attr('fill', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.4))
+        .attr('stroke','none');
+
+      // Mentor: outline only
+      g.append('g').attr('class','ribbons mentor')
+        .selectAll('path').data(ribbonData.filter(d=>d._meta.type==='mentor')).join('path')
+          .attr('class','ribbon mentor')
+          .attr('d', ribbon)
+          .attr('fill', 'none')
+          .attr('stroke', d => colorWithAlpha(nodeColorByIndex.get(d._meta.source), 0.9))
+          .attr('stroke-dasharray','3 2');
+
+      // Legend (bottom-left, uncluttered)
+      const leg = svg.append('g').attr('class','legend').attr('transform',`translate(${ -width/2 + 16 }, ${ height/2 - 140 })`);
+      const y0 = 0; const pillW = 64; const pillR = 8; const fullT = FULL, thinT = THIN;
+      // Supervisor / Mentor lines
+      leg.append('path').attr('d',`M0,${y0} H60`).attr('stroke','#fefefe').attr('stroke-width',2).attr('fill','none');
+      leg.append('text').attr('x',76).attr('y',y0+3).text('Supervisor');
+      leg.append('path').attr('d',`M0,${y0+18} H60`).attr('stroke','#fefefe').attr('stroke-width',2).attr('stroke-dasharray','3 2').attr('fill','none');
+      leg.append('text').attr('x',76).attr('y',y0+21).text('Mentor');
+      // Spacing before arc thickness pills
+      const yPills = y0 + 44;
+      leg.append('rect').attr('x',0).attr('y',yPills).attr('width',pillW).attr('height',fullT).attr('rx',pillR).attr('fill','#fefefe');
+      leg.append('text').attr('x',76).attr('y',yPills + fullT/2 + 4).text('Full-time');
+      const yThin = yPills + fullT + 12;
+      leg.append('rect').attr('x',0).attr('y',yThin).attr('width',pillW).attr('height',thinT).attr('rx',pillR).attr('fill','#fefefe');
+      leg.append('text').attr('x',76).attr('y',yThin + thinT/2 + 4).text('Part-time / Project');
+
+      // Hover / Click isolate with pin-to-focus
+      function highlightIndex(i){
+        const connected = new Set([i]);
+        ribbonData.forEach(r => { if (r._meta.source===i) connected.add(r._meta.target); if (r._meta.target===i) connected.add(r._meta.source); });
+        svg.selectAll('.group').classed('muted', g => !connected.has(g.index));
+        svg.selectAll('.group .label').style('opacity', g => connected.has(g.index) ? 1 : 0.15);
+        svg.selectAll('.ribbon').classed('muted', r => !(r._meta.source===i || r._meta.target===i));
+      }
+
+      group.on('mouseover', (evt, d) => {
+        if (focused==null) highlightIndex(d.index);
+      }).on('click', (evt, d) => {
+        focused = d.index; highlightIndex(d.index);
+      }).on('mouseout', () => {
+        if (focused==null){ tip.style('display','none'); applyFilters(); }
+      });
+
+      // Re-apply filters or restore focus after build
+      if (focused!=null) { highlightIndex(focused); } else { applyFilters(); }
+      // Hover isolate: hovered + direct neighbors fully visible
+      // group.on('mouseover', (evt, d) => {
+      //   const i = d.index;
+      //   const connected = new Set([i]);
+      //   ribbonData.forEach(r => { if (r._meta.source===i) connected.add(r._meta.target); if (r._meta.target===i) connected.add(r._meta.source); });
+      //   svg.selectAll('.group').classed('muted', g => !connected.has(g.index));
+      //   svg.selectAll('.group .label').style('opacity', g => connected.has(g.index) ? 1 : 0.15);
+      //   svg.selectAll('.ribbon').classed('muted', r => !(r._meta.source===i || r._meta.target===i));
+      // }).on('mouseout', () => {
+      //   svg.selectAll('.group').classed('muted', false);
+      //   svg.selectAll('.group .label').style('opacity', 1);
+      //   svg.selectAll('.ribbon').classed('muted', false);
+      //   tip.style('display','none');
+      // });
+
+      function applyFilters(){
+        console.log('apply filters');
+        const q = qInput.value?.trim().toLowerCase() || '';
+        const f = funcSelect.value; const dsel = domainSelect.value;
+        const keep = nodes.map(n=>{
+          const txt = `${n.name} ${n.internalTitle||''} ${n.externalTitle||''} ${n.functions.join(' ')} ${n.domains.join(' ')} ${n.engagement||''}`.toLowerCase();
+          const matchQ = !q || txt.includes(q);
+          const matchF = !f || n.primary===f || (n.functions||[]).includes(f);
+          const matchD = !dsel || (n.domains||[]).includes(dsel);
+          return matchQ && matchF && matchD;
+        });
+        svg.selectAll('.group').classed('muted', (g,i)=>!keep[i]);
+        svg.selectAll('.group .label').style('opacity', 1);
+        svg.selectAll('.ribbon').classed('muted', r => !(keep[r._meta.source] && keep[r._meta.target]));
+        svg.selectAll('.ribbons.mentor').attr('display', showMentor.checked? null : 'none');
+        svg.selectAll('.ribbons.supervisor').attr('display', showSupervisor.checked? null : 'none');
+      }
+      qInput.oninput = applyFilters; funcSelect.onchange = applyFilters; domainSelect.onchange = applyFilters; showMentor.onchange = applyFilters; showSupervisor.onchange = applyFilters;
+      applyFilters();
+
+      // ESC to clear focus
+      document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') { focused = null; tip.style('display','none'); applyFilters(); } });
+    }
+
+    layout();
+    window.addEventListener('resize', layout);
+
+    // Filters toggle
+    document.getElementById('toggleFilters').addEventListener('click', () => {
+      document.getElementById('filters').classList.toggle('hidden');
+    });
+  })();
+  </script>
+</body>
+</html>
