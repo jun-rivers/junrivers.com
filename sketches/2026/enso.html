@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<script>
+  function setup() {
+    createCanvas(512, 512);
+    background(255);
+    noFill();
+    drawCalligraphyEnso();
+    noLoop();
+  }
+
+  function drawCalligraphyEnso() {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const baseRadius = random(140, 160);
+    const baseThickness = random(50, 80);
+    const arcRatio = random(0.85, 1.15); // 90%–115% sweep
+    const totalAngle = TWO_PI * arcRatio;
+    const arcStart = random(-TWO_PI/4, -TWO_PI/8);
+    const steps = 600;
+    const trails = 10; // Number of bristle paths
+    const minTaper = random(0.2, 0.5); // Tail keeps 50–100% of thickness
+
+    strokeCap(ROUND);
+    strokeJoin(ROUND);
+    stroke(0);
+
+    for (let j = 0; j < trails; j++) {
+      let angleOffset = random(-0.01, 0.01); // brush hair split
+      let radiusOffset = random(-baseThickness * 0.5, baseThickness * 0.5); // preserve full stroke spread
+
+      for (let i = 0; i < steps; i++) {
+        const pct = i / steps;
+
+        // Ink tapering (not brush spread)
+        const taperStrength = pow(pct, 2.4);
+        const pressure = lerp(1.0, minTaper, taperStrength);
+        const thickness = baseThickness * pressure;
+        const bristleFade = 1.0 - taperStrength;
+
+        // Micro gaps at tail
+        const gapProbability = map(pct, 0.7, 1.0, 0.01, 0.7, true);
+        if (random() < gapProbability) continue;
+
+        const t = map(i, 0, steps, 0, totalAngle) + arcStart;
+        const t2 = t + 0.02 + angleOffset;
+
+        const radialNoise = noise(i * 0.05 + j * 100) * 4 - 2;
+        const radius = baseRadius + radialNoise + radiusOffset;
+
+        const x = centerX + cos(t + angleOffset) * radius;
+        const y = centerY + sin(t + angleOffset) * radius;
+        const nx = centerX + cos(t2) * (radius + random(-1, 1));
+        const ny = centerY + sin(t2) * (radius + random(-1, 1));
+
+        strokeWeight(thickness * (0.4 + random(-0.1, 0.1)));
+        stroke(0, 255 * bristleFade); // ink fade
+        line(x, y, nx, ny);
+
+        // Splashes
+        if (random() < 0.0015 && pct > 0.2) {
+          const splashAngle = t + random(-PI / 2, PI / 2);
+          const splashDist = radius + random(40, 100);
+          const sx = centerX + cos(splashAngle) * splashDist;
+          const sy = centerY + sin(splashAngle) * splashDist;
+          const sSize = random(3, 10);
+
+          noStroke();
+          fill(0, random(150, 255));
+          ellipse(sx, sy, sSize, sSize * random(0.5, 1.5));
+          noFill();
+          stroke(0); // reset
+        }
+      }
+    }
+
+    // Final dot at stroke end (optional)
+    if (random() < 0.7) {
+      const endAngle = arcStart + totalAngle;
+      const tx = centerX + cos(endAngle) * (baseRadius + 10);
+      const ty = centerY + sin(endAngle) * (baseRadius + 10);
+      noStroke();
+      fill(0);
+      ellipse(tx, ty, random(8, 18));
+    }
+  }
+</script>
+</body>
+</html>
