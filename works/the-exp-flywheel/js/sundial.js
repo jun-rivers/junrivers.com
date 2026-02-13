@@ -20,7 +20,7 @@ const colors = {
     "idea": "#9E9EFE",
     "developing": "#F2ACA4",
     "operating": "#323232",
-    "mature": "#66AA66",
+    "cashflow+": "#66AA66",
 };
 
 const partition = d3.partition();
