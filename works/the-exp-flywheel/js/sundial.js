@@ -65,6 +65,13 @@ const svg = d3.select('body').append('svg')
         if (window.location.hash) {
             history.pushState("", document.title, window.location.pathname + window.location.search); // Clear hash
         }
+        if (window.parent.location.hash) {
+            window.parent.history.pushState(
+                "", 
+                window.parent.document.title, 
+                window.parent.location.pathname + window.parent.location.search
+            );
+        }
     });
 
 d3.csv(myCsv, function(data){
