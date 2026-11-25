@@ -1,27 +1,88 @@
+// Which tab of the EXP.CONTROL sheet to show.
+// The published CSV doesn't carry the tab's name, so set the period here
+// whenever you point the chart at a different tab (they change together).
+const SHEET = {
+    gid: '1921314508',
+    period: '2026Q4-2027Q1'
+};
+const myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqySoKDQNoFqxTKAh43KPaAP_IpuYkA2zUzA3xCiWpXl3EWi2HnJaMMXZF3xsLeW7OuV05hoSRix9r/pub?gid="
+    + SHEET.gid + "&single=true&output=csv";
 
-//var myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVL1_ah4UARJw_tKyQ5TiT-kx_arrgpTQiMpZHoar7WKpCY-HDeVJHqN0aRuUYsEtzsJOIj8vHfV65/pub?output=csv";
-//var myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqySoKDQNoFqxTKAh43KPaAP_IpuYkA2zUzA3xCiWpXl3EWi2HnJaMMXZF3xsLeW7OuV05hoSRix9r/pub?output=csv";
-var myCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqySoKDQNoFqxTKAh43KPaAP_IpuYkA2zUzA3xCiWpXl3EWi2HnJaMMXZF3xsLeW7OuV05hoSRix9r/pub?gid=1921314508&single=true&output=csv";
+// ---- Modes and the sheet columns each one reads ------------------------
+// If a column is renamed in the sheet, change it here only.
+const MODES = {
+    budget: {
+        label: 'Budget',
+        size: 'b-size',                 // segment size
+        pct: 'budgetPercentage',        // share of parent
+        target: 'budget (K HKD)',       // plan
+        targetLabel: 'approved',
+        actual: 'actual (K HKD)',       // spent so far
+        overColor: '#E4572E'            // over budget = warning
+    },
+    revenue: {
+        label: 'Revenue',
+        size: 'r-size',
+        pct: 'revPercentage',
+        target: 'revenueTarget (K HKD)',
+        targetLabel: 'target',
+        actual: 'revenueActual (K HKD)',
+        overColor: '#E0B000'            // above target = celebrate
+    }
+};
+const urlMode = new URLSearchParams(window.location.search).get('mode');
+let mode = MODES[urlMode] ? urlMode : 'budget';
+let root = null;          // d3 hierarchy, kept so it can be re-sized on mode change
+let currentFocus = null;  // the segment currently zoomed into
 
-const width = window.innerWidth,
-    height = window.innerHeight,
+// ---- Helpers -------------------------------------------------------------
+// Sheet numbers may arrive as "10,000" or blank.
+const toNumber = v => {
+    const n = parseFloat(String(v == null ? '' : v).replace(/,/g, ''));
+    return isNaN(n) ? null : n;
+};
+const fmt = n => (n == null ? '-' : d3.format(',')(Math.round(n)));
+const sizeOf = d => (d[mode] && d[mode].size) || 0;
+const pctOf = d => d.data[mode].pct;
+const targetOf = d => d.data[mode].target;
+const actualOf = d => (d.agg ? d.agg[mode] : null);   // own actual, or children's sum
+const ratioOf = d => {
+    const t = targetOf(d), a = actualOf(d);
+    return (t && t > 0 && a != null) ? a / t : null;
+};
+const depthOpacity = d => {
+    const w = d.data.workcode;
+    return w ? 1 - ((w.match(/-/g) || []).length) / 9 : 1;
+};
+const titleText = d => {
+    const r = ratioOf(d);
+    return d.data.name + ' | ' + (pctOf(d) || '-') + '% of ' + (d.data.parentcode || 'EXP.')
+        + ' | ' + MODES[mode].label + ' actual / ' + MODES[mode].targetLabel + ': '
+        + fmt(actualOf(d)) + ' / ' + fmt(targetOf(d)) + ' K HKD'
+        + (r == null ? '' : ' (' + Math.round(r * 100) + '%)');
+};
+
+// ---- Layout --------------------------------------------------------------
+let width, height, maxRadius;
+const measure = () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
     maxRadius = (Math.min(width, height) / 2) - 5;
-
-const formatNumber = d3.format('');
+};
+measure();
 
 const x = d3.scaleLinear()
     .range([0, 2 * Math.PI])
     .clamp(true);
 
 const y = d3.scaleSqrt()
-    .range([maxRadius*.1, maxRadius]);
+    .range([maxRadius * .1, maxRadius]);
 
-// const color = d3.scaleOrdinal(d3.schemeCategory20c);
 const colors = {
     "idea": "#9E9EFE",
     "developing": "#F2ACA4",
     "operating": "#323232",
-    "cashflow+": "#66AA66",
+    "cashflow+": "#002FA7",
 };
 
 const partition = d3.partition();
@@ -32,8 +93,24 @@ const arc = d3.arc()
     .innerRadius(d => Math.max(0, y(d.y0)))
     .outerRadius(d => Math.max(0, y(d.y1)));
 
+// Actual-vs-target band along the outer edge of each segment.
+// g = { x0, x1, y0, y1, frac } where frac is the share of the band to fill.
+const bandWidth = g => Math.min(5, Math.max(0, (y(g.y1) - y(g.y0)) * 0.18));
+const bandArc = d3.arc()
+    .startAngle(g => x(g.x0))
+    .endAngle(g => x(g.x0 + (g.x1 - g.x0) * g.frac))
+    .innerRadius(g => Math.max(0, y(g.y1) - 1 - bandWidth(g)))
+    .outerRadius(g => Math.max(0, y(g.y1) - 1));
+
+const trackGeom = d => ({ x0: d.x0, x1: d.x1, y0: d.y0, y1: d.y1, frac: targetOf(d) > 0 ? 1 : 0 });
+const progressGeom = d => {
+    const r = ratioOf(d);
+    return { x0: d.x0, x1: d.x1, y0: d.y0, y1: d.y1, frac: r == null ? 0 : Math.min(r, 1) };
+};
+const progressColor = d => (ratioOf(d) > 1 ? MODES[mode].overColor : '#fff');
+
 const middleArcLine = d => {
-    const halfPi = Math.PI/2;
+    const halfPi = Math.PI / 2;
     const angles = [x(d.x0) - halfPi, x(d.x1) - halfPi];
     const r = Math.max(0, (y(d.y0) + y(d.y1)) / 2);
 
@@ -56,69 +133,129 @@ const textFits = d => {
     return d.data.name.length * CHAR_SPACE < perimeter;
 };
 
+document.title = 'The EXP. Flywheel · ' + SHEET.period;
+
 const svg = d3.select('body').append('svg')
     .style('width', '100vw')
     .style('height', '100vh')
     .attr("id", "pie")
     .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
-    .on('click', function(event) {
-        focusOn(); // Reset to top-level or default view
+    .on('click', function() {
+        focusOn(); // Reset to top-level
+        hideInfo();
         if (window.location.hash) {
-            history.pushState("", document.title, window.location.pathname + window.location.search); // Clear hash
+            history.pushState("", document.title, window.location.pathname + window.location.search);
         }
-        if (window.parent.location.hash) {
-            window.parent.history.pushState(
-                "", 
-                window.parent.document.title, 
-                window.parent.location.pathname + window.parent.location.search
-            );
-        }
+        try {
+            if (window.parent !== window && window.parent.location.hash) {
+                window.parent.history.pushState(
+                    "",
+                    window.parent.document.title,
+                    window.parent.location.pathname + window.parent.location.search
+                );
+            }
+        } catch (e) { /* parent on another domain */ }
     });
 
-d3.csv(myCsv, function(data){
-    var tree = DataStructures.Tree.createFromFlatTable(data),
-    root = tree.toSimpleObject(function(objectToDecorate, originalNode) {
-      objectToDecorate.size = originalNode.size;
-      if (objectToDecorate.children && objectToDecorate.children.length == 0) {
-          delete objectToDecorate.children;
-      }
-      return objectToDecorate;
+// ---- Load and draw -------------------------------------------------------
+// ---- Loading / error status ----------------------------------------------
+const setStatus = (msg, isError) => {
+    d3.select('#status')
+        .classed('error', !!isError)
+        .style('display', msg ? null : 'none')
+        .text(msg || '');
+};
+const loadedAt = () => {
+    const now = new Date();
+    return d3.timeFormat('%-d %b %Y, %H:%M')(now);
+};
+
+d3.csv(myCsv, function(error, data) {
+    if (error || !data) {
+        setStatus("Couldn't load the data. Check the sheet tab is still published, then refresh.", true);
+        return;
+    }
+    if (!data.length) {
+        setStatus('The sheet tab is empty.', true);
+        return;
+    }
+    try {
+        draw(data);
+        setStatus('Data as of ' + loadedAt() + ' (Google may lag a few minutes)', false);
+    } catch (e) {
+        // e.g. a row whose parentId doesn't match any id
+        setStatus("Couldn't build the chart: " + (e.message || e), true);
+    }
+});
+
+function draw(data) {
+    const tree = DataStructures.Tree.createFromFlatTable(data),
+    simple = tree.toSimpleObject(function(objectToDecorate, originalNode) {
+        objectToDecorate.dri = (originalNode.DRI || '').trim();
+        Object.keys(MODES).forEach(m => {
+            const c = MODES[m];
+            objectToDecorate[m] = {
+                size: toNumber(originalNode[c.size]) || 0,
+                pct: originalNode[c.pct],
+                target: toNumber(originalNode[c.target]),
+                actual: toNumber(originalNode[c.actual])
+            };
+        });
+        if (objectToDecorate.children && objectToDecorate.children.length == 0) {
+            delete objectToDecorate.children;
+        }
+        return objectToDecorate;
     });
 
-    root = d3.hierarchy(root);
-    root.sum(d => d.size);
+    root = d3.hierarchy(simple);
+
+    // Actuals: use the row's own figure if filled, otherwise the sum of its children's.
+    root.eachAfter(d => {
+        d.agg = {};
+        Object.keys(MODES).forEach(m => {
+            const own = d.data[m].actual;
+            if (own != null) { d.agg[m] = own; return; }
+            const kids = (d.children || []).map(c => c.agg[m]).filter(v => v != null);
+            d.agg[m] = kids.length ? kids.reduce((a, b) => a + b, 0) : null;
+        });
+    });
+
+    root.sum(sizeOf);
+    currentFocus = root;
 
     const slice = svg.selectAll('g.slice')
         .data(partition(root).descendants());
 
     slice.exit().remove();
 
-    // Now redefine the value function to use the previously-computed sum.
     const newSlice = slice.enter()
         .append('g').attr('class', 'slice')
-        .on('click', d => {
+        .on('click', function(d) {
             d3.event.stopPropagation();
-            const id = d.data.workcode; // Assuming 'workcode' uniquely identifies a segment
-            history.pushState({ id: id }, "", "#" + id); // Push state with id
+            const id = d.data.workcode;
+            history.pushState({ id: id }, "", "#" + id);
             focusOn(d);
+            showInfo(d, this);  // so taps on phones show the panel too
         });
 
     newSlice.append('title')
-        .text(d => d.data.name + ' | ' + d.data.percentage + '% of ' + d.data.parentcode);
-
-
+        .text(titleText);
 
     newSlice.append('path')
         .attr('class', 'main-arc')
-        .style('fill', function(d) { 
-          return colors[d.data.status];
-        })
-        .style('opacity', function(d) { 
-          var w = d.data.workcode;
-          if (!w) {return 1;}
-          return 1-((w.match(/-/g) || []).length)/9 })
+        .style('fill', d => colors[d.data.status])
+        .style('opacity', depthOpacity)
         .attr('d', arc)
-        .on("mouseover", mouseover);
+        .on('mouseover', function(d) { showInfo(d, this.parentNode); });
+
+    newSlice.append('path')
+        .attr('class', 'track-arc')
+        .attr('d', d => bandArc(trackGeom(d)));
+
+    newSlice.append('path')
+        .attr('class', 'progress-arc')
+        .style('fill', progressColor)
+        .attr('d', d => bandArc(progressGeom(d)));
 
     newSlice.append('path')
         .attr('class', 'hidden-arc')
@@ -129,10 +266,10 @@ d3.csv(myCsv, function(data){
         .attr('display', d => textFits(d) ? null : 'none')
         .style('fill', '#fff');
 
-    // Add white contour
+    // White contour
     text.append('textPath')
-        .attr('startOffset','50%')
-        .attr('xlink:href', (_, i) => `#hiddenArc${i}` )
+        .attr('startOffset', '50%')
+        .attr('xlink:href', (_, i) => `#hiddenArc${i}`)
         .text(d => d.data.name)
         .style('fill', 'none')
         .style('stroke', '#666')
@@ -140,27 +277,26 @@ d3.csv(myCsv, function(data){
         .style('stroke-linejoin', 'round');
 
     text.append('textPath')
-        .attr('startOffset','50%')
-        .attr('xlink:href', (_, i) => `#hiddenArc${i}` )
+        .attr('startOffset', '50%')
+        .attr('xlink:href', (_, i) => `#hiddenArc${i}`)
         .text(d => d.data.name);
 
-    // Add the mouseleave handler to the bounding circle.
-    d3.select('#pie').on('mouseleave', mouseleave);
+    d3.select('#pie').on('mouseleave', hideInfo);
+    d3.select('#period').text(SHEET.period);  // set here: the page's elements exist by now
+    updateModeButtons();
 
-    const id = window.location.hash.substring(1); // Extract the ID from the URL
-    console.log(id);
+    const id = window.location.hash.substring(1);
     if (id) {
-        const d = findDataById(id); // Implement this function to find data by ID
-        if (d) {
-            focusOn(d);
-        }
+        const d = findDataById(id);
+        if (d) { focusOn(d); }
     }
-});
+}
 
+// ---- Zoom ----------------------------------------------------------------
 function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
-    // Reset to top-level if no data point specified
+    currentFocus = d.data ? d : root;
 
-    const transition = svg.transition()
+    const transition = svg.transition('zoom')
         .duration(750)
         .tween('scale', () => {
             const xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
@@ -171,6 +307,12 @@ function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
     transition.selectAll('path.main-arc')
         .attrTween('d', d => () => arc(d));
 
+    transition.selectAll('path.track-arc')
+        .attrTween('d', d => () => bandArc(trackGeom(d)));
+
+    transition.selectAll('path.progress-arc')
+        .attrTween('d', d => () => bandArc(progressGeom(d)));
+
     transition.selectAll('path.hidden-arc')
         .attrTween('d', d => () => middleArcLine(d));
 
@@ -179,93 +321,158 @@ function focusOn(d = { x0: 0, x1: 1, y0: 0, y1: 1 }) {
 
     moveStackToFront(d);
 
-    //
-
     function moveStackToFront(elD) {
         svg.selectAll('.slice').filter(d => d === elD)
             .each(function(d) {
                 this.parentNode.appendChild(this);
                 if (d.parent) { moveStackToFront(d.parent); }
-            })
+            });
     }
 }
 
-// Fade all but the current sequence, and show it in the breadcrumb trail.
-function mouseover(d) {
-  
-  console.log(d);
+// ---- Info panel and hover --------------------------------------------------
+function showInfo(d, sliceEl) {
+    const esc = v => String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const m = MODES[mode];
+    const r = ratioOf(d);
+    const row = (label, value, cls) =>
+        '<dt>' + label + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + value + '</dd>';
 
-  var title = d.data.name;
-  var branchdetail = 'ID: ' + d.data.workcode + '<br/>'
-          + '<br/> percentage of ' + d.data.parentcode + ': <h3>' + d.data.percentage + '%</h3>'
-          + '<br/> status: <h3>' + d.data['status'] + '</h3>'
-          + '<br/> one-liner: <h3>' + d.data['one-liner'] + '</h3>';
-          // + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
-          // + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
-          // + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
-  var rootdetail = 
-          'one-liner: <h3>' + d.data['one-liner'] + '</h3>';
-          // + '<br/> why: <h4>' + d.data['why-purpose'] + '</h4>'
-          // + '<br/> how: <h4>' + d.data['how-strategy'] + '</h4>'
-          // + '<br/> what: <h4>' + d.data['what-usp'] + '</h4>';
+    const actualText = fmt(actualOf(d))
+        + (actualOf(d) == null ? '' : ' K HKD')
+        + (r == null ? '' : ' <span class="pct">(' + Math.round(r * 100) + '%)</span>');
+    const actualClass = r == null ? '' : (r > 1 ? (mode === 'budget' ? 'over' : 'ahead') : '');
 
-  d3.select('#title')
-      .text(title);
+    let rows = row('DRI', esc(d.data.dri) || '—', d.data.dri ? 'dri' : 'muted');
+    if (d.parent) {
+        rows += row(m.label + ' share', esc(pctOf(d) || '-') + '% of ' + esc(d.data.parentcode));
+    }
+    rows += row(m.targetLabel.charAt(0).toUpperCase() + m.targetLabel.slice(1), fmt(targetOf(d)) + ' K HKD')
+          + row('Actual', actualText, actualClass);
+    if (d.parent) {
+        rows += row('Status', '<span class="dot" style="background:' + (colors[d.data.status] || '#ccc') + '"></span>'
+            + esc(d.data.status));
+    }
 
-  if (d.data.workcode) {
-    d3.select('#detail')
-        .html(branchdetail);
-  } else {
-    d3.select('#detail')
-        .html(rootdetail);
-  }
+    const html =
+          (d.parent ? '<div class="id">' + esc(d.data.workcode) + '</div>' : '')
+        + '<dl class="facts">' + rows + '</dl>'
+        + (d.data['one-liner'] ? '<p class="oneliner">' + esc(d.data['one-liner']) + '</p>' : '');
 
-  d3.select('#info')
-      .style('visibility', '');
+    d3.select('#title').text(d.data.name);
+    d3.select('#detail').html(html);
+    d3.select('#info').style('visibility', '');
 
-  // Fade all the segments.
-  d3.selectAll('path')
-      .style('opacity', 0.3);
-
-  // Then highlight only those that are an ancestor of the current segment.
-  d3.select(this)
-      .style('opacity', 1);
+    // Fade everything, then light up the hovered segment.
+    svg.selectAll('path.main-arc, path.track-arc, path.progress-arc')
+        .interrupt('fade')
+        .style('opacity', 0.3);
+    if (sliceEl) {
+        d3.select(sliceEl).selectAll('path.main-arc, path.track-arc, path.progress-arc')
+            .style('opacity', 1);
+    }
 }
 
-// Restore everything to full opacity when          `ving off the visualization.
-function mouseleave(d) {
+function hideInfo() {
+    d3.select('#info').style('visibility', 'hidden');
 
-  d3.select('#info')
-      .style('visibility', 'hidden');
-  // Deactivate all segments during transition.
-  d3.selectAll('path').on('mouseover', null);
-
-  // Transition each segment to full opacity and then reactivate it.
-  d3.selectAll('path')
-      .transition()
-      .duration(1000)
-      .style('opacity', function(d) { 
-          var w = d.data.workcode;
-          if (!w) {return 1;}
-          return 1-((w.match(/-/g) || []).length)/9 })
-      .on('end', function() {
-              d3.select(this).on('mouseover', mouseover);
-            });
+    // A named transition, so zoom and mode changes can't cancel it.
+    svg.selectAll('path.main-arc')
+        .transition('fade').duration(1000)
+        .style('opacity', depthOpacity);
+    svg.selectAll('path.track-arc, path.progress-arc')
+        .transition('fade').duration(1000)
+        .style('opacity', 1);
 }
 
 function findDataById(id) {
-    const nodes = svg.selectAll('g.slice').data(); // Get all data bound to slices
-    return nodes.find(d => d.data.workcode === id); // Find the node with the matching workcode
+    const nodes = svg.selectAll('g.slice').data();
+    return nodes.find(d => d.data.workcode === id);
 }
 
 window.addEventListener('popstate', function(event) {
     if (event.state && event.state.id) {
         const d = findDataById(event.state.id);
-        if (d) {
-            focusOn(d);
-        }
+        if (d) { focusOn(d); }
     } else {
-        // Fallback focus, e.g., reset to a default view or focus on the top-level
         focusOn();
     }
+});
+
+// ---- Mode switching --------------------------------------------------------
+function setMode(newMode) {
+    if (!MODES[newMode] || newMode === mode || !root) { return; }
+
+    // Where every segment and band is now…
+    const before = new Map();
+    root.each(d => before.set(d, { x0: d.x0, x1: d.x1, p: progressGeom(d).frac, t: trackGeom(d).frac }));
+
+    // …then re-size the tree for the new mode.
+    mode = newMode;
+    root.sum(sizeOf);
+    partition(root);
+
+    const f = currentFocus || root;
+    const xd = d3.interpolate(x.domain(), [f.x0, f.x1]);
+    const between = d => {
+        const b = before.get(d);
+        const i = d3.interpolate(
+            { x0: b.x0, x1: b.x1, p: b.p, t: b.t },
+            { x0: d.x0, x1: d.x1, p: progressGeom(d).frac, t: trackGeom(d).frac });
+        return t => {
+            const v = i(t);
+            return { x0: v.x0, x1: v.x1, y0: d.y0, y1: d.y1, p: v.p, t: v.t, data: d.data };
+        };
+    };
+
+    const tr = svg.transition('zoom')
+        .duration(750)
+        .tween('scale', () => t => { x.domain(xd(t)); });
+
+    tr.selectAll('path.main-arc')
+        .attrTween('d', d => { const g = between(d); return t => arc(g(t)); });
+    tr.selectAll('path.track-arc')
+        .attrTween('d', d => { const g = between(d); return t => { const v = g(t); v.frac = v.t; return bandArc(v); }; });
+    tr.selectAll('path.progress-arc')
+        .attrTween('d', d => { const g = between(d); return t => { const v = g(t); v.frac = v.p; return bandArc(v); }; });
+    tr.selectAll('path.hidden-arc')
+        .attrTween('d', d => { const g = between(d); return t => middleArcLine(g(t)); });
+    tr.selectAll('text')
+        .attrTween('display', d => { const g = between(d); return t => textFits(g(t)) ? null : 'none'; });
+
+    svg.selectAll('path.progress-arc').style('fill', progressColor);
+    svg.selectAll('g.slice title').text(titleText);
+    updateModeButtons();
+
+    // Keep the mode in the address bar (?mode=revenue) without losing the #focus.
+    const params = new URLSearchParams(window.location.search);
+    params.set('mode', mode);
+    history.replaceState(history.state, '', window.location.pathname + '?' + params.toString() + window.location.hash);
+}
+
+function updateModeButtons() {
+    d3.selectAll('#modes button')
+        .classed('active', function() { return this.getAttribute('data-mode') === mode; });
+}
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest && e.target.closest('#modes button');
+    if (btn) { setMode(btn.getAttribute('data-mode')); }
+});
+
+// ---- Resize / rotate --------------------------------------------------------
+let resizeTimer = null;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+        measure();
+        y.range([maxRadius * .1, maxRadius]);
+        svg.attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`);
+        svg.selectAll('path.main-arc').attr('d', arc);
+        svg.selectAll('path.track-arc').attr('d', d => bandArc(trackGeom(d)));
+        svg.selectAll('path.progress-arc').attr('d', d => bandArc(progressGeom(d)));
+        svg.selectAll('path.hidden-arc').attr('d', middleArcLine);
+        svg.selectAll('g.slice text').attr('display', d => textFits(d) ? null : 'none');
+    }, 150);
 });

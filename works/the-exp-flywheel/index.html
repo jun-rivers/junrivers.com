@@ -35,6 +35,18 @@
     fill: none;
   }
 
+  /* Actual-vs-target band on the outer edge of each segment */
+  .slice .track-arc {
+    fill: #fff;
+    fill-opacity: .25;
+    pointer-events: none;
+  }
+
+  .slice .progress-arc {
+    fill-opacity: .9;
+    pointer-events: none;
+  }
+
   .slice text {
     pointer-events: none;
     dominant-baseline: middle;
@@ -57,8 +69,120 @@
     font-size: 2.5em;
   }
 
+  #title {
+    margin: 0 0 2px;
+    line-height: 1.1;
+  }
+
   #detail {
-    font-size: 1em;
+    font-size: 12px;
+  }
+
+  #detail .id {
+    color: #999;
+    letter-spacing: .1em;
+    margin-bottom: 10px;
+  }
+
+  #detail .facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 14px;
+    row-gap: 5px;
+    margin: 0 0 10px;
+  }
+
+  #detail dt {
+    color: #999;
+  }
+
+  #detail dd {
+    margin: 0;
+    color: #323232;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  #detail dd.dri { font-weight: bold; }
+  #detail dd.muted { color: #bbb; }
+  #detail dd.over { color: #E4572E; }
+  #detail dd.ahead { color: #B08A00; }
+  #detail .pct { color: inherit; opacity: .8; }
+
+  #detail .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  #detail .oneliner {
+    margin: 0;
+    color: #666;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  #modes {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 3;
+  }
+
+  #modes {
+    display: flex;
+    align-items: center;
+  }
+
+  #period {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    letter-spacing: .15em;
+    color: #323232;
+    margin-right: 14px;
+  }
+
+  #status {
+    position: absolute;
+    top: 56px;
+    right: 20px;
+    font-size: 11px;
+    color: #999;
+    text-align: right;
+  }
+
+  #status.error {
+    color: #E4572E;
+    font-size: 13px;
+  }
+
+  #modes button {
+    font-family: 'Inconsolata', monospace;
+    font-size: 12px;
+    letter-spacing: .1em;
+    padding: 6px 14px;
+    border: 1px solid #323232;
+    background: #fff;
+    color: #323232;
+    cursor: pointer;
+  }
+
+  #modes button + button {
+    border-left: none;
+  }
+
+  #modes button.active {
+    background: #323232;
+    color: #fff;
+  }
+
+  @media (max-width: 700px) {
+    #sidebar { width: 60%; top: 64px; }
+    #title { font-size: 1.8em; }
+    #legend { width: 90%; bottom: 16px; }
+    #modes { top: 12px; right: 12px; }
+    #status { top: 44px; right: 12px; }
   }
 
   #legend {
@@ -77,9 +201,8 @@
 <body>
 <script type="text/javascript" src="js/base.js"></script>
 <script type="text/javascript" src="js/DataStructures.Tree.customized.js"></script>
-<script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
-<script type="text/javascript" src="//d3js.org/d3-scale-chromatic.v0.3.min.js"></script>
-<!-- <script type="text/javascript" src="js/d3-history.min.js"></script> -->
+<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3-scale-chromatic.v0.3.min.js"></script>
 <script type="text/javascript" src="js/sundial.js"></script>
 
   <div id='sidebar'>
@@ -88,11 +211,17 @@
       <p id='detail'></p>
     </div>
   </div>
+  <div id='modes'>
+    <span id='period'></span>
+    <button data-mode='budget'>BUDGET</button><button data-mode='revenue'>REVENUE</button>
+  </div>
+  <div id='status'>Loading…</div>
   <div id='legend'>
     <h5><span style='color: #9E9EFE'>idea</span> | pre-budget</h5>
     <h5><span style='color: #F2ACA4'>developing</span> | pre-revenue / public-awareness</h5>
     <h5><span style='color: #323232'>operating</span> | lead-magnet / revenue-stream</h5>
-    <h5><span style='color: #AACCAA'>cashflow+</span> | sustainable</h5>
+    <h5><span style='color: #002FA7'>cashflow+</span> | sustainable</h5>
+    <h5>outer band | actual vs target, <span style='color: #E4572E'>red</span> = over budget, <span style='color: #E0B000'>gold</span> = above revenue target</h5>
   </div>
 </body>
 </html>
