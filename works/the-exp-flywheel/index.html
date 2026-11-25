@@ -53,12 +53,13 @@
     text-anchor: middle;
   }
 
+  /* Everything aligns to the 12-point grid: 2.5vw from each edge */
   #sidebar {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: 2.5vw;
+    left: 2.5vw;
     width: 25%;
-    height: 90%;
+    height: calc(100% - 5vw);
     text-align: left;
     line-height: 14px;
     color: #666;
@@ -71,7 +72,7 @@
 
   #title {
     margin: 0 0 2px;
-    line-height: 1.1;
+    line-height: 1;
   }
 
   #detail {
@@ -125,8 +126,8 @@
 
   #modes {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 2.5vw;
+    right: 2.5vw;
     z-index: 3;
   }
 
@@ -145,8 +146,8 @@
 
   #status {
     position: absolute;
-    top: 56px;
-    right: 20px;
+    top: calc(2.5vw + 36px);
+    right: 2.5vw;
     font-size: 11px;
     color: #999;
     text-align: right;
@@ -178,23 +179,59 @@
   }
 
   @media (max-width: 700px) {
-    #sidebar { width: 60%; top: 64px; }
+    #sidebar { width: 60%; top: calc(2.5vw + 56px); }
     #title { font-size: 1.8em; }
-    #legend { width: 90%; bottom: 16px; }
-    #modes { top: 12px; right: 12px; }
-    #status { top: 44px; right: 12px; }
+    #legend { width: calc(100% - 5vw); }
   }
 
   #legend {
     position: absolute;
-    bottom: 40px;
-    left: 20px;
+    bottom: 2.5vw;
+    left: 2.5vw;
     width: 25%;
-    height: 10%;
     text-align: left;
-    line-height: 6px;
+    line-height: 14px;
     color: #666;
     z-index: 2;
+  }
+
+  /* Tight legend lines, nothing under the last one, so its bottom sits on the grid */
+  #legend h5 {
+    margin: 0 0 4px;
+  }
+
+  #legend h5:last-child {
+    margin-bottom: 0;
+  }
+  /* Exactly one screen: no scroll bars */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #pie {
+    display: block;   /* inline SVGs add a few pixels below themselves */
+  }
+
+  /* 12-point grid, as on exp.is: 4 columns x 3 rows of short dashes,
+     the two centre dashes omitted. Black on white, never clickable. */
+  #grid12 {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #grid12 i {
+    position: absolute;
+    width: 2.5vw;
+    height: 1px;
+    background: rgba(0, 0, 0, .9);
+    left: calc((100% - 2.5vw) * var(--c) / 3);
+    top: calc(2.5vw + (100% - 5vw - 1px) * var(--r) / 2);
   }
 </style>
 </head>
@@ -210,6 +247,9 @@
       <h3 id='title'></h3>
       <p id='detail'></p>
     </div>
+  </div>
+  <div id='grid12' aria-hidden='true'>
+    <i style='--c:0;--r:0'></i><i style='--c:1;--r:0'></i><i style='--c:2;--r:0'></i><i style='--c:3;--r:0'></i><i style='--c:0;--r:1'></i><i style='--c:3;--r:1'></i><i style='--c:0;--r:2'></i><i style='--c:1;--r:2'></i><i style='--c:2;--r:2'></i><i style='--c:3;--r:2'></i>
   </div>
   <div id='modes'>
     <span id='period'></span>

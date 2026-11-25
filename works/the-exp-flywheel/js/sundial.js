@@ -42,7 +42,22 @@ const toNumber = v => {
     return isNaN(n) ? null : n;
 };
 const fmt = n => (n == null ? '-' : d3.format(',')(Math.round(n)));
-const sizeOf = d => (d[mode] && d[mode].size) || 0;
+const ownSize = d => (d[mode] && d[mode].size) || 0;
+// d3 adds a parent's own value to its children's total, so a parent row that
+// also has a size would leave a gap after its children. Count a row's own size
+// only when nothing underneath it has a size (i.e. leaves, or "unbroken-down" rows).
+const subtreeSize = (d, memo) => {
+    if (memo.has(d)) { return memo.get(d); }
+    const kids = (d.children || []).reduce((a, c) => a + subtreeSize(c, memo), 0);
+    const v = kids > 0 ? kids : ownSize(d);
+    memo.set(d, v);
+    return v;
+};
+let sizeMemo = new Map();
+const sizeOf = d => {
+    const kids = (d.children || []).reduce((a, c) => a + subtreeSize(c, sizeMemo), 0);
+    return kids > 0 ? 0 : ownSize(d);
+};
 const pctOf = d => d.data[mode].pct;
 const targetOf = d => d.data[mode].target;
 const actualOf = d => (d.agg ? d.agg[mode] : null);   // own actual, or children's sum
@@ -220,6 +235,7 @@ function draw(data) {
         });
     });
 
+    sizeMemo = new Map();
     root.sum(sizeOf);
     currentFocus = root;
 
@@ -410,6 +426,7 @@ function setMode(newMode) {
 
     // …then re-size the tree for the new mode.
     mode = newMode;
+    sizeMemo = new Map();
     root.sum(sizeOf);
     partition(root);
 
