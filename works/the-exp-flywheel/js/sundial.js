@@ -65,6 +65,28 @@ const ratioOf = d => {
     const t = targetOf(d), a = actualOf(d);
     return (t && t > 0 && a != null) ? a / t : null;
 };
+// ---- Profitability (independent of Budget/Revenue view) -------------------
+// Uses actuals when they exist, otherwise the plan (approved budget / revenue target).
+const finOf = d => {
+    const ra = d.agg ? d.agg.revenue : null, ca = d.agg ? d.agg.budget : null;
+    const useActual = ra != null || ca != null;
+    const rev = useActual ? (ra || 0) : (d.data.revenue.target || 0);
+    const cost = useActual ? (ca || 0) : (d.data.budget.target || 0);
+    return { rev: rev, cost: cost, basis: useActual ? 'actual' : 'plan' };
+};
+// Operating margin = (revenue - cost) / revenue; cost cover = revenue / cost.
+const marginOf = f => (f.rev > 0 ? (f.rev - f.cost) / f.rev : null);
+const coverOf = f => (f.cost > 0 ? f.rev / f.cost : null);
+// cashflow+ is automatic, but only judged on actuals: when a row (or its children)
+// has an actual on either side and actual revenue exceeds actual cost.
+// With no actuals at all, the sheet's own status is shown unchanged.
+const statusOf = d => {
+    const f = finOf(d);
+    if (f.basis === 'actual' && f.rev > 0 && f.rev > f.cost) { return 'cashflow+'; }
+    return d.data.status;
+};
+const colorOf = d => colors[statusOf(d)] || '#ccc';
+
 const depthOpacity = d => {
     const w = d.data.workcode;
     return w ? 1 - ((w.match(/-/g) || []).length) / 9 : 1;
@@ -74,7 +96,8 @@ const titleText = d => {
     return d.data.name + ' | ' + (pctOf(d) || '-') + '% of ' + (d.data.parentcode || 'EXP.')
         + ' | ' + MODES[mode].label + ' actual / ' + MODES[mode].targetLabel + ': '
         + fmt(actualOf(d)) + ' / ' + fmt(targetOf(d)) + ' K HKD'
-        + (r == null ? '' : ' (' + Math.round(r * 100) + '%)');
+        + (r == null ? '' : ' (' + Math.round(r * 100) + '%)')
+        + (function() { const m = marginOf(finOf(d)); return m == null ? '' : ' | margin ' + (m >= 0 ? '+' : '') + Math.round(m * 100) + '%'; })();
 };
 
 // ---- Layout --------------------------------------------------------------
@@ -259,7 +282,7 @@ function draw(data) {
 
     newSlice.append('path')
         .attr('class', 'main-arc')
-        .style('fill', d => colors[d.data.status])
+        .style('fill', colorOf)
         .style('opacity', depthOpacity)
         .attr('d', arc)
         .on('mouseover', function(d) { showInfo(d, this.parentNode); });
@@ -366,9 +389,24 @@ function showInfo(d, sliceEl) {
     }
     rows += row(m.targetLabel.charAt(0).toUpperCase() + m.targetLabel.slice(1), fmt(targetOf(d)) + ' K HKD')
           + row('Actual', actualText, actualClass);
+    // Profitability: operating margin, with revenue-to-cost cover in brackets.
+    const f = finOf(d), mg = marginOf(f), cv = coverOf(f);
+    let marginText, marginClass = '';
+    if (f.rev <= 0 && f.cost <= 0) {
+        marginText = '—';
+        marginClass = 'muted';
+    } else if (f.rev <= 0) {
+        marginText = 'no revenue';
+        marginClass = 'over';
+    } else {
+        marginText = (mg >= 0 ? '+' : '') + Math.round(mg * 100) + '%'
+            + (cv == null ? '' : ' <span class="pct">(' + cv.toFixed(2) + '× cost)</span>');
+        marginClass = mg > 0 ? 'profit' : 'over';
+    }
+    rows += row('Margin <span class="basis">' + f.basis + '</span>', marginText, marginClass);
     if (d.parent) {
-        rows += row('Status', '<span class="dot" style="background:' + (colors[d.data.status] || '#ccc') + '"></span>'
-            + esc(d.data.status));
+        rows += row('Status', '<span class="dot" style="background:' + colorOf(d) + '"></span>'
+            + esc(statusOf(d)));
     }
 
     const html =
