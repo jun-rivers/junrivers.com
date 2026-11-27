@@ -76,6 +76,9 @@ const finOf = d => {
 };
 // Operating margin = (revenue - cost) / revenue; cost cover = revenue / cost.
 const marginOf = f => (f.rev > 0 ? (f.rev - f.cost) / f.rev : null);
+// Margin is only shown when BOTH actual revenue and actual cost exist for the row
+// (its own or summed from children). Plan figures never produce a margin.
+const hasActualMargin = d => !!(d.agg && d.agg.revenue != null && d.agg.budget != null);
 const coverOf = f => (f.cost > 0 ? f.rev / f.cost : null);
 // cashflow+ is automatic, but only judged on actuals: when a row (or its children)
 // has an actual on either side and actual revenue exceeds actual cost.
@@ -97,7 +100,7 @@ const titleText = d => {
         + ' | ' + MODES[mode].label + ' actual / ' + MODES[mode].targetLabel + ': '
         + fmt(actualOf(d)) + ' / ' + fmt(targetOf(d)) + ' K HKD'
         + (r == null ? '' : ' (' + Math.round(r * 100) + '%)')
-        + (function() { const m = marginOf(finOf(d)); return m == null ? '' : ' | margin ' + (m >= 0 ? '+' : '') + Math.round(m * 100) + '%'; })();
+        + (function() { const m = hasActualMargin(d) ? marginOf(finOf(d)) : null; return m == null ? '' : ' | margin ' + (m >= 0 ? '+' : '') + Math.round(m * 100) + '%'; })();
 };
 
 // ---- Layout --------------------------------------------------------------
@@ -389,21 +392,20 @@ function showInfo(d, sliceEl) {
     }
     rows += row(m.targetLabel.charAt(0).toUpperCase() + m.targetLabel.slice(1), fmt(targetOf(d)) + ' K HKD')
           + row('Actual', actualText, actualClass);
-    // Profitability: operating margin, with revenue-to-cost cover in brackets.
-    const f = finOf(d), mg = marginOf(f), cv = coverOf(f);
-    let marginText, marginClass = '';
-    if (f.rev <= 0 && f.cost <= 0) {
-        marginText = '—';
-        marginClass = 'muted';
-    } else if (f.rev <= 0) {
-        marginText = 'no revenue';
-        marginClass = 'over';
-    } else {
-        marginText = (mg >= 0 ? '+' : '') + Math.round(mg * 100) + '%'
-            + (cv == null ? '' : ' <span class="pct">(' + cv.toFixed(2) + '× cost)</span>');
-        marginClass = mg > 0 ? 'profit' : 'over';
+    // Profitability: operating margin on actuals only, with revenue-to-cost cover in brackets.
+    if (hasActualMargin(d)) {
+        const f = finOf(d), mg = marginOf(f), cv = coverOf(f);
+        let marginText, marginClass = '';
+        if (f.rev <= 0) {
+            marginText = 'no revenue';
+            marginClass = 'over';
+        } else {
+            marginText = (mg >= 0 ? '+' : '') + Math.round(mg * 100) + '%'
+                + (cv == null ? '' : ' <span class="pct">(' + cv.toFixed(2) + '× cost)</span>');
+            marginClass = mg > 0 ? 'profit' : 'over';
+        }
+        rows += row('Margin', marginText, marginClass);
     }
-    rows += row('Margin <span class="basis">' + f.basis + '</span>', marginText, marginClass);
     if (d.parent) {
         rows += row('Status', '<span class="dot" style="background:' + colorOf(d) + '"></span>'
             + esc(statusOf(d)));
